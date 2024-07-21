@@ -14,10 +14,10 @@
             height: 100vh;
             margin: 0;
         }
-        #auth, #calc {
+        #auth, #calc, #register {
             text-align: center;
         }
-        #calc {
+        #calc, #register {
             display: none;
         }
         .button {
@@ -50,10 +50,20 @@
         <input id="login-username" type="text" placeholder="Username">
         <input id="login-password" type="password" placeholder="Password">
         <button onclick="login()">Login</button>
+        <p>Don't have an account? <button onclick="showRegister()">Register</button></p>
+    </div>
+
+    <div id="register">
+        <h1>Register</h1>
+        <input id="register-username" type="text" placeholder="Username">
+        <input id="register-password" type="password" placeholder="Password">
+        <button onclick="register()">Register</button>
+        <p>Already have an account? <button onclick="showLogin()">Login</button></p>
     </div>
 
     <div id="calc">
         <h1>Calculator</h1>
+        <button onclick="logout()">Logout</button>
         <div id="calculator">
             <input id="display" type="text" readonly>
             <button class="button" onclick="appendToDisplay('7')">7</button>
@@ -86,23 +96,63 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password }),
-                    mode: 'cors' // Ensure CORS is enabled
+                    mode: 'cors'
                 });
 
                 if (!response.ok) {
-                    throw new Error('Username or Password are incorrect');
+                    throw new Error('Login failed');
                 }
 
                 const data = await response.json();
                 localStorage.setItem('token', data.token);
 
-                // Hide login form and show calculator
                 document.getElementById('auth').style.display = 'none';
+                document.getElementById('register').style.display = 'none';
                 document.getElementById('calc').style.display = 'block';
             } catch (error) {
                 alert('Login failed!');
                 console.error('Error:', error);
             }
+        }
+
+        async function register() {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+
+            try {
+                const response = await fetch('http://34.201.114.206:3000/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Registration failed');
+                }
+
+                alert('Registration successful! Please log in.');
+                showLogin();
+            } catch (error) {
+                alert('Registration failed!');
+                console.error('Error:', error);
+            }
+        }
+
+        function showRegister() {
+            document.getElementById('auth').style.display = 'none';
+            document.getElementById('register').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('auth').style.display = 'block';
+            document.getElementById('register').style.display = 'none';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            document.getElementById('auth').style.display = 'block';
+            document.getElementById('calc').style.display = 'none';
         }
 
         function appendToDisplay(value) {
@@ -117,7 +167,6 @@
         function calculate() {
             const display = document.getElementById('display');
             try {
-                // Evaluate the mathematical expression
                 display.value = eval(display.value);
             } catch {
                 display.value = 'Error';
@@ -126,4 +175,3 @@
     </script>
 </body>
 </html>
-
