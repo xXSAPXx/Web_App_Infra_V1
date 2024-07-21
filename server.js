@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 const pool = mysql.createPool({
   host: 'database-1.c9cyo2wmq0yg.us-east-1.rds.amazonaws.com',
   user: 'admin',
-  password: 'yourpassword',
+  password: '12345678',
   database: 'CALC_APP_DB',
   connectionLimit: 10
 });
