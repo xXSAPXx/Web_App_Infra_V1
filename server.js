@@ -22,6 +22,19 @@ const pool = mysql.createPool({
   connectionLimit: 10
 });
 
+// Test the MySQL connection
+pool.getConnection((err, connection) => {
+  if (err) {
+    // Log the error to server.log
+    logStream.write(`[${new Date().toISOString()}] Error connecting to MySQL: ${err.message}\n`);
+    console.error('Error connecting to MySQL:', err);
+    process.exit(1); // Exit the process with an error code
+  } else {
+    console.log('Connected to MySQL database');
+    connection.release(); // Release the connection back to the pool
+  }
+});
+
 // Registration endpoint
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
