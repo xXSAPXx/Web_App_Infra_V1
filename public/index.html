@@ -1,1 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #auth, #calc, #register {
+            text-align: center;
+        }
+        #calc, #register {
+            display: none;
+        }
+        .button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 18px;
+        }
+        #calculator {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            max-width: 200px;
+            margin: auto;
+        }
+        #calculator input {
+            grid-column: span 4;
+            font-size: 24px;
+            text-align: right;
+            padding: 10px;
+        }
+        #calculator button {
+            padding: 15px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="auth">
+        <h1>Login</h1>
+        <input id="login-username" type="text" placeholder="Username">
+        <input id="login-password" type="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <p>Don't have an account? <button onclick="showRegister()">Register</button></p>
+    </div>
+
+    <div id="register">
+        <h1>Register</h1>
+        <input id="register-username" type="text" placeholder="Username">
+        <input id="register-password" type="password" placeholder="Password">
+        <button onclick="register()">Register</button>
+        <p>Already have an account? <button onclick="showLogin()">Login</button></p>
+    </div>
+
+    <div id="calc">
+        <h1>Calculator</h1>
+        <button onclick="logout()">Logout</button>
+        <div id="calculator">
+            <input id="display" type="text" readonly>
+            <button class="button" onclick="appendToDisplay('7')">7</button>
+            <button class="button" onclick="appendToDisplay('8')">8</button>
+            <button class="button" onclick="appendToDisplay('9')">9</button>
+            <button class="button" onclick="appendToDisplay('/')">/</button>
+            <button class="button" onclick="appendToDisplay('4')">4</button>
+            <button class="button" onclick="appendToDisplay('5')">5</button>
+            <button class="button" onclick="appendToDisplay('6')">6</button>
+            <button class="button" onclick="appendToDisplay('*')">*</button>
+            <button class="button" onclick="appendToDisplay('1')">1</button>
+            <button class="button" onclick="appendToDisplay('2')">2</button>
+            <button class="button" onclick="appendToDisplay('3')">3</button>
+            <button class="button" onclick="appendToDisplay('-')">-</button>
+            <button class="button" onclick="appendToDisplay('0')">0</button>
+            <button class="button" onclick="appendToDisplay('.')">.</button>
+            <button class="button" onclick="calculate()">=</button>
+            <button class="button" onclick="appendToDisplay('+')">+</button>
+            <button class="button" onclick="clearDisplay()">C</button>
+        </div>
+    </div>
+
+    <script>
+        async function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch('http://34.201.114.206:3000/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Login failed');
+                }
+
+                const data = await response.json();
+                localStorage.setItem('token', data.token);
+
+                document.getElementById('auth').style.display = 'none';
+                document.getElementById('register').style.display = 'none';
+                document.getElementById('calc').style.display = 'block';
+            } catch (error) {
+                alert('Login failed!');
+                console.error('Error:', error);
+            }
+        }
+
+        async function register() {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+
+            try {
+                const response = await fetch('http://34.201.114.206:3000/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Registration failed');
+                }
+
+                alert('Registration successful! Please log in.');
+                showLogin();
+            } catch (error) {
+                alert('Registration failed!');
+                console.error('Error:', error);
+            }
+        }
+
+        function showRegister() {
+            document.getElementById('auth').style.display = 'none';
+            document.getElementById('register').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('auth').style.display = 'block';
+            document.getElementById('register').style.display = 'none';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            document.getElementById('auth').style.display = 'block';
+            document.getElementById('calc').style.display = 'none';
+        }
+
+        function appendToDisplay(value) {
+            const display = document.getElementById('display');
+            display.value += value;
+        }
+
+        function clearDisplay() {
+            document.getElementById('display').value = '';
+        }
+
+        function calculate() {
+            const display = document.getElementById('display');
+            try {
+                display.value = eval(display.value);
+            } catch {
+                display.value = 'Error';
+            }
+        }
+    </script>
+</body>
+</html>
 
