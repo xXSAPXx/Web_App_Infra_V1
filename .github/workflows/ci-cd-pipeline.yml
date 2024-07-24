@@ -71,7 +71,8 @@ jobs:
           ssh-add -L # List the added keys for verification
           
           # Connect to the server and execute deployment commands
-          ssh -o StrictHostKeyChecking=no ubuntu@$SERVER << 'EOF'
+          ssh -o StrictHostKeyChecking=no ec2-user@$SERVER << 'EOF'
+            sudo su - root 
             cd /var/www/html/calculator # Navigate to the project directory
             git pull origin main # Pull the latest changes from the repository
             npm install # Install any new or updated dependencies
