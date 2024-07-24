@@ -72,9 +72,18 @@ jobs:
           
           # Connect to the server and execute deployment commands
           ssh -o StrictHostKeyChecking=no ec2-user@$SERVER << 'EOF'
-            sudo su - root 
-            cd /var/www/html/calculator # Navigate to the project directory
-            git pull origin main # Pull the latest changes from the repository
-            npm install # Install any new or updated dependencies
-            pm2 restart all # Restart the application using pm2
+            # Switch to root user
+            sudo su - root
+            
+            # Navigate to the project directory
+            cd /var/www/html/calculator
+            
+            # Pull the latest changes from the repository
+            git pull origin main
+            
+            # Install any new or updated dependencies
+            npm install
+            
+            # Restart the application using pm2 (or any other process manager you use)
+            pm2 restart all
           EOF
