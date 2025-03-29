@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Update and install httpd
-sudo yum update -y
-sudo yum install -y httpd
+sudo dnf upgrade -y
+sudo dnf install -y httpd
 
 # Start and enable httpd
 sudo systemctl start httpd
@@ -12,7 +12,7 @@ sudo systemctl enable httpd
 sudo mkdir -p /var/www/html/calculator
 
 # Install git
-sudo yum install -y git
+sudo dnf install -y git
 
 
 
@@ -45,7 +45,7 @@ grep "http://$CURRENT_IP:3000" "$HTML_FILE"
 
 # Install Node.js 18.x from NodeSource
 curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
-sudo yum install -y nodejs 
+sudo dnf install -y nodejs 
 
 # Create directory for the backend and set up Node.js environment
 sudo mkdir -p $BACKEND_DIR
