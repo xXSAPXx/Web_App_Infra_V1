@@ -1,6 +1,6 @@
 #!/bin/bash
 
-### Variables ###
+################### Variables ########################
 REPO_URL="https://gitlab.com/devops7375008/DevOps_APP.git"
 CLONE_DIR="/var/www/html/calculator"
 BACKEND_DIR="/var/www/backend"
@@ -8,36 +8,24 @@ HTML_FILE="$CLONE_DIR/public/index.html"
 DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
 
 
-# Update and install httpd
+# Install / Eenable HTTPD Service:
 sudo dnf install -y httpd
-
-# Start and enable httpd
 sudo systemctl start httpd
 sudo systemctl enable httpd
 
 # Create directory for the application
-sudo mkdir -p /var/www/html/calculator
+sudo mkdir -p ${CLONE_DIR}
 
 # Install git
 sudo dnf install -y git
+sudo git clone ${REPO_URL} ${CLONE_DIR}
+sudo chown -R apache:apache ${CLONE_DIR}
 
-##################################################################
 
-# Fetch application files from GitHub
-sudo git clone $REPO_URL $CLONE_DIR
-
-# Change ownership of the files to the apache user
-sudo chown -R apache:apache $CLONE_DIR
-
-# Get the current public IP address
+# Get the current public IP address // # Replace the old IP address with the new one in the HTML file
+# {} #
 CURRENT_IP=$(curl -s ifconfig.me)
-
-# Replace the old IP address with the new one in the HTML file
 sudo sed -i "s|http://34.201.114.206:3000|http://$CURRENT_IP:3000|g" "$HTML_FILE"
-
-# Verify that the replacement was successful
-grep "http://$CURRENT_IP:3000" "$HTML_FILE"
-
 
 
 # Install Node.js 18.x from NodeSource
