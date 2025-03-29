@@ -7,7 +7,7 @@ provider "aws" {
 # Create a VPC / 2_Public_Subnets / Internet_Gateway
 ##################################################################
 
-resource "aws_vpc" "example_vpc" {
+resource "aws_vpc" "my_vpc" {
   cidr_block = "10.0.0.0/24"
   tags = {
     Name = "App_VPC_IaC"
@@ -16,7 +16,7 @@ resource "aws_vpc" "example_vpc" {
 
 # Create a public subnet
 resource "aws_subnet" "public_subnet" {
-  vpc_id            = aws_vpc.example_vpc.id
+  vpc_id            = aws_vpc.my_vpc.id
   cidr_block        = "10.0.0.0/28"
   availability_zone = "us-east-1a"   	# Replace with your preferred AZ
   map_public_ip_on_launch = true  		# Enable this to auto-assign public IPs
@@ -28,7 +28,7 @@ resource "aws_subnet" "public_subnet" {
 
 # Create a second public subnet in a different AZ
 resource "aws_subnet" "public_subnet_2" {
-  vpc_id            = aws_vpc.example_vpc.id
+  vpc_id            = aws_vpc.my_vpc.id
   cidr_block        = "10.0.0.16/28" 			# Make sure the CIDR block doesn't overlap with the first subnet
   availability_zone = "us-east-1b"   			# Replace with another AZ in your preferred region
   map_public_ip_on_launch = true  				# Enable this to auto-assign public IPs
@@ -40,7 +40,7 @@ resource "aws_subnet" "public_subnet_2" {
 
 # Create an internet gateway
 resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.example_vpc.id
+  vpc_id = aws_vpc.my_vpc.id
   tags = {
     Name = "Internet_Gateway_IaC"
   }
@@ -54,7 +54,7 @@ resource "aws_internet_gateway" "igw" {
 
 # Create a private subnet in the same AZ as the first public subnet
 resource "aws_subnet" "private_subnet" {
-  vpc_id            = aws_vpc.example_vpc.id
+  vpc_id            = aws_vpc.my_vpc.id
   cidr_block        = "10.0.0.32/28"          # Make sure the CIDR block doesn't overlap with the public subnet
   availability_zone = "us-east-1a"            # Same AZ as the first public subnet
   map_public_ip_on_launch = true              # Auto-assign public IPs
@@ -67,7 +67,7 @@ resource "aws_subnet" "private_subnet" {
 
 # Create a private subnet in the same AZ as the second public subnet
 resource "aws_subnet" "private_subnet_2" {
-  vpc_id            = aws_vpc.example_vpc.id
+  vpc_id            = aws_vpc.my_vpc.id
   cidr_block        = "10.0.0.48/28"          # Make sure the CIDR block doesn't overlap with the public subnet
   availability_zone = "us-east-1b"            # Same AZ as the second public subnet
   map_public_ip_on_launch = true              # Auto-assign public IPs
@@ -95,7 +95,7 @@ resource "aws_db_subnet_group" "mydb_subnet_group" {
 
 # Create a security group for the RDS instance
 resource "aws_security_group" "rds_sg" {
-  vpc_id = aws_vpc.example_vpc.id
+  vpc_id = aws_vpc.my_vpc.id
 
   ingress {
     from_port   = 3306
@@ -164,7 +164,7 @@ data "template_file" "userdata" {
 ##################################################################
 
 resource "aws_route_table" "public_rt" {
-  vpc_id = aws_vpc.example_vpc.id
+  vpc_id = aws_vpc.my_vpc.id
 
   route {
     cidr_block = "0.0.0.0/0" 					# Any traffic destined for an address outside the VPC will be directed to the VPC internet gateway
@@ -196,7 +196,7 @@ resource "aws_route_table_association" "public_rt_assoc_2" {
 ##################################################################
 
 resource "aws_security_group" "firstsec" {
-  vpc_id = aws_vpc.example_vpc.id
+  vpc_id = aws_vpc.my_vpc.id
 
   ingress {
     from_port   = 80
@@ -237,7 +237,7 @@ resource "aws_security_group" "firstsec" {
 ##################################################################
 
 resource "aws_security_group" "lb_security_group" {
-  vpc_id = aws_vpc.example_vpc.id
+  vpc_id = aws_vpc.my_vpc.id
 
   # Allow incoming HTTP traffic
   ingress {
@@ -272,15 +272,15 @@ resource "aws_security_group" "lb_security_group" {
 }
 
 
-##################################################################
-# TARGET GROUP CREATION FOR ALB 
-##################################################################
+##########################################################################
+# Target Group Creation for ALB 
+##########################################################################
 
 resource "aws_lb_target_group" "web_tg" {
   name     = "web-tg"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = aws_vpc.example_vpc.id
+  vpc_id   = aws_vpc.my_vpc.id
 
   health_check {
     path                = "/"  # Path to your health_check.html file OR "/" FOR GENERIC ROOT_PATH HEALTH_CHECK
@@ -297,9 +297,9 @@ resource "aws_lb_target_group" "web_tg" {
 }
 
 
-##################################################################
-# Application Load Balancer (ALB)
-##################################################################
+########################################################################################################
+# Application Load Balancer (ALB) / ALB Listeners for HTTP and HTTPS Routing To The ALB Target Group 
+########################################################################################################
 
 # Define the Application Load Balancer
 resource "aws_lb" "web_alb" {
@@ -323,27 +323,44 @@ resource "aws_lb_listener" "http" {
   port              = 80
   protocol          = "HTTP"
 
+#  default_action {
+#    type             = "forward"
+#    target_group_arn = aws_lb_target_group.web_tg.arn
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      protocol    = "HTTPS"
+      port        = "443"
+      status_code = "301"
+    }
+  }
+}
+
+
+# Define ALB HTTPS Listener
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.web_alb.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = aws_acm_certificate.alb_cert.arn
+
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.web_tg.arn
   }
 }
 
+##########################################################################
+#  ACM SSL Certificate for the ALB_AWS_Provided_Domain 
+##########################################################################
 
-## Define ALB HTTPS Listener
-#resource "aws_lb_listener" "https" {
-#  load_balancer_arn = aws_lb.web_alb.arn
-#  port              = 443
-#  protocol          = "HTTPS"
-#  ssl_policy        = "ELBSecurityPolicy-2016-08"
-#  certificate_arn   = var.ssl_certificate_arn
-#
-#  default_action {
-#    type             = "forward"
-#    target_group_arn = aws_lb_target_group.web_tg.arn
-#  }
-#}
-
+resource "aws_acm_certificate" "alb_cert" {
+  domain_name       = aws_lb.web_alb.dns_name
+  validation_method = "DNS"
+}
 
 
 
@@ -399,10 +416,10 @@ resource "aws_autoscaling_group" "web_server_asg" {
 
 
 ##################################################################
-# CLOUDWATCH ALARM AND SCALING OUT POLICY (CPU above 50% ALARM)
+# CLOUDWATCH ALARM AND SCALING OUT POLICY (CPU above 70% ALARM)
 ##################################################################
 
-# Define a CloudWatch Alarm
+# Define a CloudWatch Alarm for CPU Utilization Above 70%
 resource "aws_cloudwatch_metric_alarm" "cpu_alarm_high" {
   alarm_name          = "cpu_alarm_high"
   comparison_operator = "GreaterThanThreshold"
@@ -411,8 +428,8 @@ resource "aws_cloudwatch_metric_alarm" "cpu_alarm_high" {
   namespace           = "AWS/EC2"
   period              = "120"
   statistic           = "Average"
-  threshold           = "50"
-  alarm_description   = "This metric monitors the average CPU utilization and triggers if it goes above 50%."
+  threshold           = "70"
+  alarm_description   = "This metric monitors the average CPU utilization and triggers if it goes above 70%."
   actions_enabled     = true
   alarm_actions       = [aws_autoscaling_policy.scale_out_policy.arn]
   dimensions = {
