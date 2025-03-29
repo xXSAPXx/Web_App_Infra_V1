@@ -14,12 +14,12 @@ sudo systemctl start httpd
 sudo systemctl enable httpd
 
 # Create directory for the application
-sudo mkdir -p ${CLONE_DIR}
+sudo mkdir -p $CLONE_DIR
 
 # Install git
 sudo dnf install -y git
-sudo git clone ${REPO_URL} ${CLONE_DIR}
-sudo chown -R apache:apache ${CLONE_DIR}
+sudo git clone $REPO_URL $CLONE_DIR
+sudo chown -R apache:apache $CLONE_DIR
 
 
 # Get the current public IP address // # Replace the old IP address with the new one in the HTML file
