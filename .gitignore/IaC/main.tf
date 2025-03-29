@@ -1,6 +1,6 @@
 
 provider "aws" {
-  region = "us-east-1"   				# Replace with your preferred region
+  region = "us-east-1"  # Replace with your preferred region
 }
 
 ##################################################################
@@ -48,7 +48,7 @@ resource "aws_internet_gateway" "igw" {
 
 
 ##################################################################
-# Create a private subnet for the MySQL / SEC GROUP / RDS itself
+# Create 2 private_subnets for the MySQL DB / SEC GROUP 
 ##################################################################
 
 
@@ -117,8 +117,9 @@ resource "aws_security_group" "rds_sg" {
 }
 
 
-
-# Create an RDS instance in the private subnet
+################################################################################
+# Create an RDS Instance in the Private Subnet Group (2 private_subnets)
+################################################################################
 resource "aws_db_instance" "mydb" {
   allocated_storage    = 20
   engine               = "mysql"
@@ -131,10 +132,10 @@ resource "aws_db_instance" "mydb" {
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   db_subnet_group_name = aws_db_subnet_group.mydb_subnet_group.name
 
-  snapshot_identifier  = "db-state-iac-after-deployment"  # Replace with your snapshot ID from which you want the DB to be created 
+  snapshot_identifier  = "calculator-app-rds-final-snapshot-iac"  # Replace with your snapshot ID from which you want the DB to be created 
   
   # Prevent deletion of the database
-  final_snapshot_identifier = "calculator-app-rds-final-snapshot-iac"
+  final_snapshot_identifier = "calculator-app-rds-final-snapshot-iac2"
   skip_final_snapshot       = false
 }
 
@@ -323,44 +324,46 @@ resource "aws_lb_listener" "http" {
   port              = 80
   protocol          = "HTTP"
 
-#  default_action {
-#    type             = "forward"
-#    target_group_arn = aws_lb_target_group.web_tg.arn
-
-  default_action {
-    type = "redirect"
-
-    redirect {
-      protocol    = "HTTPS"
-      port        = "443"
-      status_code = "301"
-    }
-  }
-}
-
-
-# Define ALB HTTPS Listener
-resource "aws_lb_listener" "https" {
-  load_balancer_arn = aws_lb.web_alb.arn
-  port              = 443
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate.alb_cert.arn
-
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.web_tg.arn
+
+#  default_action {
+#    type = "redirect"
+#
+#    redirect {
+#      protocol    = "HTTPS"
+#      port        = "443"
+#      status_code = "HTTP_301"
+#    }
+
   }
 }
+
+
+## Define ALB HTTPS Listener
+#resource "aws_lb_listener" "https" {
+#  load_balancer_arn = aws_lb.web_alb.arn
+#  port              = 443
+#  protocol          = "HTTPS"
+#  ssl_policy        = "ELBSecurityPolicy-2016-08"
+#  certificate_arn   = aws_acm_certificate.alb_cert.arn
+#
+#  default_action {
+#    type             = "forward"
+#    target_group_arn = aws_lb_target_group.web_tg.arn
+#  }
+#}
+
 
 ##########################################################################
 #  ACM SSL Certificate for the ALB_AWS_Provided_Domain 
 ##########################################################################
 
-resource "aws_acm_certificate" "alb_cert" {
-  domain_name       = aws_lb.web_alb.dns_name
-  validation_method = "DNS"
-}
+#resource "aws_acm_certificate" "alb_cert" {
+#  domain_name       = aws_lb.web_alb.dns_name
+#  validation_method = "DNS"
+#}
 
 
 
