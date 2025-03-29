@@ -145,17 +145,15 @@ output "rds_endpoint" {
 }
 
 
-###############################################################################
-# CREATING A TEMPLATE FILE SO TERRAFORM CAN PASS THE rds_endpoint to it
-###############################################################################
+###########################################################################################
+# CREATING A TEMPLATE FILE (user_data) For VMs -- TERRAFORM PASSES THE rds_endpoint to it. 
+###########################################################################################
 
 
-data "template_file" "userdata" {
-  template = file("${path.module}/userdata_for_launch_config.tpl")
-
-  vars = {
+locals {
+  userdata = templatefile("${path.module}/userdata_for_launch_config.tpl", {
     db_endpoint = aws_db_instance.mydb.endpoint
-  }
+  })
 }
 
 
@@ -378,7 +376,7 @@ resource "aws_launch_configuration" "web_server_launch_configuration" {
   key_name      = "Test.env"
   security_groups = [aws_security_group.firstsec.id]
   
-  user_data = data.template_file.userdata.rendered
+  user_data = local.userdata
 
   root_block_device {
     volume_size = 10
