@@ -354,39 +354,35 @@ resource "aws_lb_listener" "http" {
 #}
 
 
-##########################################################################
-#  ACM SSL Certificate for the ALB_AWS_Provided_Domain 
-##########################################################################
-
-#resource "aws_acm_certificate" "alb_cert" {
-#  domain_name       = aws_lb.web_alb.dns_name
-#  validation_method = "DNS"
-#}
-
 
 
 ##################################################################
-# LUNCH_CONFIGURATION FOR THE EC2 IN THE AUTO SCALING GROUP
+# Launch Template For Every EC2 Instance: 
 ##################################################################
 
-resource "aws_launch_configuration" "web_server_launch_configuration" {
-  name          = "web-server-launch-configuration"
-  image_id      = "ami-0583d8c7a9c35822c"    		# Replace with your desired AMI ID
+resource "aws_launch_template" "web_server_template" {
+  name_prefix   = "web-server-template"
+  image_id      = "ami-0583d8c7a9c35822c"
   instance_type = "t2.micro"
   key_name      = "Test.env"
-  security_groups = [aws_security_group.firstsec.id]
-  
-  user_data = local.userdata
 
-  root_block_device {
-    volume_size = 10
-    volume_type = "gp2"
+  user_data = base64encode(local.userdata)
+
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      volume_size = 10
+      volume_type = "gp2"
+    }
   }
-  
+
+  network_interfaces {
+    security_groups = [aws_security_group.firstsec.id]
+  }
+
   # Ensure the launch configuration is created only after the RDS instance
   depends_on = [aws_db_instance.mydb]
 }
-
 
 
 ##################################################################
@@ -394,11 +390,15 @@ resource "aws_launch_configuration" "web_server_launch_configuration" {
 ##################################################################
 
 resource "aws_autoscaling_group" "web_server_asg" {
-  launch_configuration = aws_launch_configuration.web_server_launch_configuration.id
+  launch_template {
+    id      = aws_launch_template.web_server_template.id
+    version = "$Latest"
+  }
+
   min_size             = 1
   max_size             = 3
   desired_capacity     = 1
-  vpc_zone_identifier  = [aws_subnet.public_subnet.id, aws_subnet.public_subnet_2.id]  # Configure the ASG to deploy EC2s in BOTH subnets
+  vpc_zone_identifier  = [aws_subnet.public_subnet.id, aws_subnet.public_subnet_2.id]  # Deploy EC2s in both subnets
 
   # Correct EC2 target group ARN here
   target_group_arns    = [aws_lb_target_group.web_tg.arn]
@@ -409,11 +409,14 @@ resource "aws_autoscaling_group" "web_server_asg" {
     propagate_at_launch = true
   }
 
-  health_check_type = "ELB"  # Keep this as "ELB" for ALB/ELB compatibility
- 
-# Ensure the Auto Scaling Group is created only after the launch configuration
-  depends_on = [aws_launch_configuration.web_server_launch_configuration]
+  health_check_type    = "ELB"  # ALB/ELB compatibility
+
+  # Optionally add health check grace period to allow user data script to run
+  health_check_grace_period = 300  # 5 minutes grace period for the instances to finish boot
+
+  depends_on = [aws_launch_template.web_server_template]  # Ensure template is created before ASG
 }
+
 
 
 ##################################################################
