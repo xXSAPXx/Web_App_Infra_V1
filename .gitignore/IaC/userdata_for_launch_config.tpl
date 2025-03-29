@@ -1,7 +1,14 @@
 #!/bin/bash
 
+### Variables ###
+REPO_URL="https://gitlab.com/devops7375008/DevOps_APP.git"
+CLONE_DIR="/var/www/html/calculator"
+BACKEND_DIR="/var/www/backend"
+HTML_FILE="$CLONE_DIR/public/index.html"
+DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
+
+
 # Update and install httpd
-sudo dnf upgrade -y
 sudo dnf install -y httpd
 
 # Start and enable httpd
@@ -14,17 +21,7 @@ sudo mkdir -p /var/www/html/calculator
 # Install git
 sudo dnf install -y git
 
-
-
-### Variables ###
-REPO_URL="https://github.com/xXSAPXx/Calculator_APP.git"
-CLONE_DIR="/var/www/html/calculator"
-BACKEND_DIR="/var/www/backend"
-HTML_FILE="$CLONE_DIR/public/index.html"
-DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
-
-
-
+##################################################################
 
 # Fetch application files from GitHub
 sudo git clone $REPO_URL $CLONE_DIR
