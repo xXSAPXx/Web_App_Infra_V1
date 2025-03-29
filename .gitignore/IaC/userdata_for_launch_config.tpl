@@ -23,7 +23,9 @@ sudo chown -R apache:apache $CLONE_DIR
 
 
 # Get the current public IP address // # Replace the old IP address with the new one in the HTML file
-# {} #
+# Since the frontend (HTML app) is running on the client's browser, and the backend (Node.js app) is hosted on a remote server,
+# We need to dynamically update the IP address in the HTML file so that the client’s browser can connect to the correct backend.
+# The IP address cannot be 'localhost' because it refers to the client’s local machine, not the backend server.
 CURRENT_IP=$(curl -s ifconfig.me)
 sudo sed -i "s|http://34.201.114.206:3000|http://$CURRENT_IP:3000|g" "$HTML_FILE"
 
