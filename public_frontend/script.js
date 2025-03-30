@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             localStorage.setItem('token', data.token);
             showCalculatorView();
-            loginForm.reset(); // Clear form fields on success
+            authForm.reset(); // Clear form fields on success
         } catch (error) {
             console.error('Login Error:', error);
             displayError('login', `Login failed: ${error.message}`);
