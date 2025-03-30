@@ -4,7 +4,7 @@
 REPO_URL="https://gitlab.com/devops7375008/DevOps_APP.git"
 CLONE_DIR="/var/www/html/calculator"
 BACKEND_DIR="/var/www/backend"
-HTML_FILE="$CLONE_DIR/public/index.html"
+FRONTEND_JS_FILE="$CLONE_DIR/public/script.js"
 DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
 
 
@@ -27,7 +27,7 @@ sudo chown -R apache:apache $CLONE_DIR
 # We need to dynamically update the IP address in the HTML file so that the client’s browser can connect to the correct backend.
 # The IP address cannot be 'localhost' because it refers to the client’s local machine, not the backend server.
 CURRENT_IP=$(curl -s ifconfig.me)
-sudo sed -i "s|http://34.201.114.206:3000|http://$CURRENT_IP:3000|g" "$HTML_FILE"
+sudo sed -i "s|http://34.201.114.206:3000|http://$CURRENT_IP:3000|g" "$FRONTEND_JS_FILE"
 
 
 # Install Node.js 18.x from NodeSource
