@@ -4,7 +4,7 @@
 REPO_URL="https://gitlab.com/devops7375008/DevOps_APP.git"
 CLONE_DIR="/var/www/html/calculator"
 BACKEND_DIR="/var/www/backend"
-FRONTEND_JS_FILE="$CLONE_DIR/public/script.js"
+FRONTEND_JS_FILE="$CLONE_DIR/public_frontend/script.js"
 DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
 
 
@@ -40,7 +40,7 @@ sudo chown -R apache:apache $BACKEND_DIR
 sudo npm init -y
 
 # Move server.js and package.json to the backend directory
-sudo mv $CLONE_DIR/src/server.js $BACKEND_DIR/
+sudo mv $CLONE_DIR/src_backend/server.js $BACKEND_DIR/
 sudo mv $CLONE_DIR/package.json $BACKEND_DIR/
 
 # Navigate to backend directory and install NodeJS dependencies
@@ -50,8 +50,8 @@ sudo npm install
 # Create virtual host configuration
 cat <<EOL | sudo tee /etc/httpd/conf.d/calculator.conf
 <VirtualHost *:80>
-    DocumentRoot "$CLONE_DIR/public"
-    <Directory "$CLONE_DIR/public">
+    DocumentRoot "$CLONE_DIR/public_frontend"
+    <Directory "$CLONE_DIR/public_frontend">
         AllowOverride None
         Require all granted
     </Directory>
