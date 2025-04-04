@@ -32,7 +32,8 @@ body {
     display: none; /* Hide all sections initially */
 }
 
-.form-section.active {
+.form-section.active,  /* Keep this for login/register */
+.calculator-container.active { 
     display: block; /* Show the active section */
 }
 
