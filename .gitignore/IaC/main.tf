@@ -38,7 +38,7 @@ resource "cloudflare_dns_record" "alb_record" {
   name    = "app"                                       # Creates app.xxsapxx.uk
   type    = "CNAME"                                     # ALB doesn't have static IP, use CNAME
   content = aws_lb.web_alb.dns_name                     # Attach DNS Record to AWS ALB DNS
-  ttl     = 300                                         # DNS Record TTL 
+  ttl     = 1                                           # DNS Record TTL 
   proxied = true                                        # Enables Cloudflare HTTPS + caching
 }
 
@@ -382,32 +382,40 @@ resource "aws_lb_listener" "http" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.web_tg.arn
 
-#  default_action {
-#    type = "redirect"
-#
-#    redirect {
-#      protocol    = "HTTPS"
-#      port        = "443"
-#      status_code = "HTTP_301"
-#    }
+    redirect {
+      protocol    = "HTTPS"
+      port        = "443"
+      status_code = "HTTP_301"
+    }
 
   }
 }
 
 
-## Define ALB HTTPS Listener
-#resource "aws_lb_listener" "https" {
-#  load_balancer_arn = aws_lb.web_alb.arn
-#  port              = 443
-#  protocol          = "HTTPS"
-#  ssl_policy        = "ELBSecurityPolicy-2016-08"
-#  certificate_arn   = aws_acm_certificate.alb_cert.arn
-#
-#  default_action {
-#    type             = "forward"
-#    target_group_arn = aws_lb_target_group.web_tg.arn
-#  }
-#}
+# TLS Cert for the defined domain: 
+resource "aws_acm_certificate" "alb_cert" {
+  domain_name       = "xxsapxx.uk"
+  validation_method = "DNS"
+
+  tags = {
+    Environment = "prod"
+  }
+}
+
+
+# Define ALB HTTPS Listener
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.web_alb.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = aws_acm_certificate.alb_cert.arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.web_tg.arn
+  }
+}
 
 
 
