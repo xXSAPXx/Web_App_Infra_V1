@@ -2,25 +2,49 @@
 #############################################
 ############ CLOUDFLARE PROVIDER ############
 
-provider "cloudflare" {
-  email = "simeon_kill@abv.bg"
-  api_token = "SnG2DR8mWvMDmb95ix7gM16Kf2rM2eaNdVg7Gvxe"
-}
-
-data "cloudflare_zones" "domain" {
-  filter {
-    name = "xxsapxx.uk"
+terraform {
+  required_providers {
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+    }
   }
 }
 
-resource "cloudflare_record" "app" {
-  zone_id = data.cloudflare_zones.domain.zones[0].id
-  name    = "app"                           # creates app.xxsapxx.uk
-  type    = "CNAME"                         # ALB doesn't have static IP, use CNAME
-  value   = aws_lb.web_alb.dns_name
-  ttl     = 300
-  proxied = true                            # enables Cloudflare HTTPS + caching
+
+# Set Config for CloudFlare API KEY: 
+variable "cloudflare_api_token" {
+  type        = string
+  description = "API token with DNS edit permissions"
+  sensitive   = true
+  nullable    = false
 }
+
+
+# Set variable for the CloudFlare API KEY: 
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
+}
+
+
+# Select Domain: 
+data "cloudflare_zones" "selected" {
+    name = "xxsapxx.uk"
+}
+
+
+# Change DNS Records to point to the AWS ALB DNS Name: 
+resource "cloudflare_dns_record" "alb_record" { 
+  zone_id = "195758153010d261c55ee7bbfc4dfe41"          # Domain Zone ID
+  name    = "app"                                       # Creates app.xxsapxx.uk
+  type    = "CNAME"                                     # ALB doesn't have static IP, use CNAME
+  content = aws_lb.web_alb.dns_name                     # Attach DNS Record to AWS ALB DNS
+  ttl     = 300                                         # DNS Record TTL 
+  proxied = true                                        # Enables Cloudflare HTTPS + caching
+}
+
+
+
+
 
 
 
@@ -44,6 +68,7 @@ resource "aws_vpc" "my_vpc" {
     Name = "App_VPC_IaC"
   }
 }
+
 
 # Create a public subnet
 resource "aws_subnet" "public_subnet" {
