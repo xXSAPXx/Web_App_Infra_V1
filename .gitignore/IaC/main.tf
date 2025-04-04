@@ -1,7 +1,38 @@
 
+#############################################
+############ CLOUDFLARE PROVIDER ############
+
+provider "cloudflare" {
+  email = "simeon_kill@abv.bg"
+  api_token = "SnG2DR8mWvMDmb95ix7gM16Kf2rM2eaNdVg7Gvxe"
+}
+
+data "cloudflare_zones" "domain" {
+  filter {
+    name = "xxsapxx.uk"
+  }
+}
+
+resource "cloudflare_record" "app" {
+  zone_id = data.cloudflare_zones.domain.zones[0].id
+  name    = "app"                           # creates app.xxsapxx.uk
+  type    = "CNAME"                         # ALB doesn't have static IP, use CNAME
+  value   = aws_lb.web_alb.dns_name
+  ttl     = 300
+  proxied = true                            # enables Cloudflare HTTPS + caching
+}
+
+
+
+
+
+##########################################
+############ AWS PROVIDER ################
+
 provider "aws" {
   region = "us-east-1"  # Replace with your preferred region
 }
+
 
 ##################################################################
 # Create a VPC / 2_Public_Subnets / Internet_Gateway
