@@ -434,7 +434,7 @@ resource "aws_acm_certificate" "alb_cert" {
 }
 
 # Create DNS validation record in Cloudflare:
-resource "cloudflare_record" "cert_validation" {
+resource "cloudflare_dns_record" "cert_validation" {
   zone_id = var.cloudflare_zone_id
   name    = aws_acm_certificate.alb_cert.domain_validation_options[0].resource_record_name
   type    = aws_acm_certificate.alb_cert.domain_validation_options[0].resource_record_type
@@ -443,7 +443,7 @@ resource "cloudflare_record" "cert_validation" {
 }
 
 
-# 3. Wait for the certificate to be validated and issued:
+# Wait for the certificate to be validated and issued:
 resource "aws_acm_certificate_validation" "cert_validation" {
   certificate_arn = aws_acm_certificate.alb_cert.arn
 
