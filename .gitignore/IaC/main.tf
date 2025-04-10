@@ -10,8 +10,7 @@ terraform {
   }
 }
 
-
-# Set Config for CloudFlare API KEY: 
+# Set Variable for CloudFlare API_KEY: 
 variable "cloudflare_api_token" {
   type        = string
   description = "API token with DNS edit permissions"
@@ -19,11 +18,16 @@ variable "cloudflare_api_token" {
   nullable    = false
 }
 
+# Set Variable for CloudFlare ZONE_ID: 
+variable "cloudflare_zone_id" {
+  type        = string
+  description = "Zone ID for the Cloudflare domain"
+  nullable    = false
+}
 
-# Set variables for CloudFlare: 
+
 provider "cloudflare" {
   api_token = var.cloudflare_api_token
-  zone_id   = var.cloudflare_zone_id
 }
 
 
