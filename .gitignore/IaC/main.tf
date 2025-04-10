@@ -433,14 +433,24 @@ resource "aws_acm_certificate" "alb_cert" {
   }
 }
 
+
 # Create DNS validation record in Cloudflare:
 resource "cloudflare_dns_record" "cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.alb_cert.domain_validation_options : dvo.domain_name => {
+      name  = dvo.resource_record_name
+      type  = dvo.resource_record_type
+      value = dvo.resource_record_value
+    }
+  }
+
   zone_id = var.cloudflare_zone_id
-  name    = aws_acm_certificate.alb_cert.domain_validation_options[0].resource_record_name
-  type    = aws_acm_certificate.alb_cert.domain_validation_options[0].resource_record_type
-  value   = aws_acm_certificate.alb_cert.domain_validation_options[0].resource_record_value
+  name    = each.value.name
+  type    = each.value.type
+  content = each.value.value
   ttl     = 60
 }
+
 
 
 # Wait for the certificate to be validated and issued:
@@ -448,7 +458,7 @@ resource "aws_acm_certificate_validation" "cert_validation" {
   certificate_arn = aws_acm_certificate.alb_cert.arn
 
   validation_record_fqdns = [
-    cloudflare_record.cert_validation.hostname
+    for record in cloudflare_dns_record.cert_validation : record.name
   ]
 }
 
