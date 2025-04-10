@@ -20,9 +20,10 @@ variable "cloudflare_api_token" {
 }
 
 
-# Set variable for the CloudFlare API KEY: 
+# Set variables for CloudFlare: 
 provider "cloudflare" {
   api_token = var.cloudflare_api_token
+  zone_id   = var.cloudflare_zone_id
 }
 
 
@@ -33,17 +34,19 @@ data "cloudflare_zones" "selected" {
 
 
 # Change DNS Records to point to the AWS ALB DNS Name: 
-resource "cloudflare_dns_record" "alb_record" { 
-  zone_id = "195758153010d261c55ee7bbfc4dfe41"          # Domain Zone ID
-  name    = "app"                                       # Creates app.xxsapxx.uk
-  type    = "CNAME"                                     # ALB doesn't have static IP, use CNAME
-  content = aws_lb.web_alb.dns_name                     # Attach DNS Record to AWS ALB DNS
-  ttl     = 1                                           # DNS Record TTL 
-  proxied = true                                        # Enables Cloudflare HTTPS + caching
-}
-
-
-
+#resource "cloudflare_dns_record" "alb_record" { 
+#  zone_id = "var.cloudflare_zone_id"                        # Domain Zone ID
+#  comment = "Domain pointed to AWS_ALB"                 #
+#  name    = "app"                                       # Creates app.xxsapxx.uk
+#  type    = "CNAME"                                     # ALB doesn't have static IP, use CNAME
+#  content = aws_lb.web_alb.dns_name                     # Attach DNS Record to AWS ALB DNS
+#  ttl     = 1                                           # DNS Record TTL 
+#  proxied = true                                        # Enables Cloudflare HTTPS + caching
+#  settings = {
+#    ipv4_only = true
+#    ipv6_only = true
+#  }                                        
+#}
 
 
 
@@ -391,19 +394,7 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-
-# TLS Cert for the defined domain: 
-resource "aws_acm_certificate" "alb_cert" {
-  domain_name       = "xxsapxx.uk"
-  validation_method = "DNS"
-
-  tags = {
-    Environment = "prod"
-  }
-}
-
-
-# Define ALB HTTPS Listener
+# Define ALB HTTPS Listener (With the relevant TLS Cert:)
 resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.web_alb.arn
   port              = 443
@@ -418,6 +409,44 @@ resource "aws_lb_listener" "https" {
 }
 
 
+########################################################################################################
+# Create Amazon-issued TLS certificate for our domain: [Specifies DNS validation.] / VALIDATE CERT 
+########################################################################################################
+
+# This means AWS will provide a DNS CNAME record that you must create (manually or via Terraform) 
+# in your domain's DNS (e.g., Cloudflare, Route 53) to prove ownership before the cert is issued.
+
+resource "aws_acm_certificate" "alb_cert" {
+  domain_name       = "xxsapxx.uk"
+  validation_method = "DNS"
+
+  tags = {
+    Environment = "prod"
+  }
+  
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# Create DNS validation record in Cloudflare:
+resource "cloudflare_record" "cert_validation" {
+  zone_id = var.cloudflare_zone_id
+  name    = aws_acm_certificate.alb_cert.domain_validation_options[0].resource_record_name
+  type    = aws_acm_certificate.alb_cert.domain_validation_options[0].resource_record_type
+  value   = aws_acm_certificate.alb_cert.domain_validation_options[0].resource_record_value
+  ttl     = 60
+}
+
+
+# 3. Wait for the certificate to be validated and issued:
+resource "aws_acm_certificate_validation" "cert_validation" {
+  certificate_arn = aws_acm_certificate.alb_cert.arn
+
+  validation_record_fqdns = [
+    cloudflare_record.cert_validation.hostname
+  ]
+}
 
 
 ##################################################################
