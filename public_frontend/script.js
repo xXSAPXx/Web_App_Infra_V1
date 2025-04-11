@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginErrorDiv = document.getElementById('login-error');
     const registerErrorDiv = document.getElementById('register-error');
 
-    const API_BASE_URL = 'http://application-load-balancer-2093934536.us-east-1.elb.amazonaws.com'; // Store base URL
+    const API_BASE_URL = 'https://www.xxsapxx.uk'; // Store base URL
 
     // --- View Switching Functions ---
     function showLoginView() {
