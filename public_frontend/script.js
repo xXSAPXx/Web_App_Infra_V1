@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginErrorDiv = document.getElementById('login-error');
     const registerErrorDiv = document.getElementById('register-error');
 
-    const API_BASE_URL = 'https://xxsapxx.uk'; // Store base URL
+    const API_BASE_URL = 'https://www.xxsapxx.uk'; // Store base URL
 
     // --- View Switching Functions ---
     function showLoginView() {
