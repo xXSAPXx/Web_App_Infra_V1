@@ -32,9 +32,9 @@ provider "cloudflare" {
 
 
 # Select Domain: 
-#data "cloudflare_zones" "selected" {
-#    name = "xxsapxx.uk"
-#}
+data "cloudflare_zones" "selected" {
+    name = "xxsapxx.uk"
+}
 
 
 # Change DNS Records to point to the AWS ALB DNS Name: 
