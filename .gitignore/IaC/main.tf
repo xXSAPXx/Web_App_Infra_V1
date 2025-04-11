@@ -32,9 +32,9 @@ provider "cloudflare" {
 
 
 # Select Domain: 
-data "cloudflare_zones" "selected" {
-    name = "xxsapxx.uk"
-}
+#data "cloudflare_zones" "selected" {
+#    name = "xxsapxx.uk"
+#}
 
 
 # Change DNS Records to point to the AWS ALB DNS Name: 
@@ -335,15 +335,17 @@ resource "aws_security_group" "lb_security_group" {
 
 
 ##########################################################################
-# Target Group Creation for ALB 
+# Target Groups Creation for ALB (Frontend / Backend)
 ##########################################################################
 
-resource "aws_lb_target_group" "web_tg" {
-  name     = "web-tg"
+
+# Frontend Target Group Creation: (httpd service)
+resource "aws_lb_target_group" "frontend_tg" {
+  name     = "frontend-tg"
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.my_vpc.id
-
+  
   health_check {
     path                = "/"  # Path to your health_check.html file OR "/" FOR GENERIC ROOT_PATH HEALTH_CHECK
     interval            = 30
@@ -353,10 +355,38 @@ resource "aws_lb_target_group" "web_tg" {
     matcher             = "200"
   }
 
-  tags = {
-    Name = "WebTargetGroup"
+    tags = {
+    Name = "FrontendTargetGroup"
   }
 }
+
+
+# Backend Target Group Creation: (Node.js)
+resource "aws_lb_target_group" "backend_tg" {
+  name     = "backend-tg"
+  port     = 3000
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.my_vpc.id
+  
+  health_check {
+    path                = "/"  # Path to your health_check.html file OR "/" FOR GENERIC ROOT_PATH HEALTH_CHECK
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+
+    tags = {
+    Name = "BackendTargetGroup"
+  }
+}
+
+
+
+
+
+
 
 
 ########################################################################################################
@@ -408,10 +438,25 @@ resource "aws_lb_listener" "https" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.web_tg.arn
+    target_group_arn = aws_lb_target_group.frontend_tg.arn
   }
 }
 
+# Listener Rule To Send /api/* To Backend:
+resource "aws_lb_listener_rule" "backend_api_route" {
+  listener_arn = aws_lb_listener.https.arn
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend_tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*"]
+    }
+  }
+}
 
 ########################################################################################################
 # Create Amazon-issued TLS certificate for our domain: [Specifies DNS validation.] / VALIDATE CERT 
