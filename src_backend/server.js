@@ -86,6 +86,12 @@ app.post('/api/login', (req, res) => {
     );
 });
 
+// Backend Server Endpoint Health Check for AWS ALB:
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+  });
+
+// Server Listens for response on port 3000: 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
