@@ -460,7 +460,6 @@ resource "aws_lb_listener_rule" "backend_api_route" {
 
 # This means AWS will provide a DNS CNAME record that you must create (manually or via Terraform) 
 # in your domain's DNS (e.g., Cloudflare, Route 53) to prove ownership before the cert is issued.
-
 resource "aws_acm_certificate" "alb_cert" {
   domain_name       = "xxsapxx.uk"
   validation_method = "DNS"
