@@ -1,7 +1,69 @@
 
+#############################################
+############ CLOUDFLARE PROVIDER ############
+
+terraform {
+  required_providers {
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+    }
+  }
+}
+
+# Set Variable for CloudFlare API_KEY: 
+variable "cloudflare_api_token" {
+  type        = string
+  description = "API token with DNS edit permissions"
+  sensitive   = true
+  nullable    = false
+}
+
+# Set Variable for CloudFlare ZONE_ID: 
+variable "cloudflare_zone_id" {
+  type        = string
+  description = "Zone ID for the Cloudflare domain"
+  nullable    = false
+}
+
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
+}
+
+
+# Select Domain: 
+#data "cloudflare_zones" "selected" {
+#    name = "xxsapxx.uk"
+#}
+
+
+# Change DNS Records to point to the AWS ALB DNS Name: 
+#resource "cloudflare_dns_record" "alb_record" { 
+#  zone_id = "var.cloudflare_zone_id"                        # Domain Zone ID
+#  comment = "Domain pointed to AWS_ALB"                 #
+#  name    = "app"                                       # Creates app.xxsapxx.uk
+#  type    = "CNAME"                                     # ALB doesn't have static IP, use CNAME
+#  content = aws_lb.web_alb.dns_name                     # Attach DNS Record to AWS ALB DNS
+#  ttl     = 1                                           # DNS Record TTL 
+#  proxied = true                                        # Enables Cloudflare HTTPS + caching
+#  settings = {
+#    ipv4_only = true
+#    ipv6_only = true
+#  }                                        
+#}
+
+
+
+
+
+
+##########################################
+############ AWS PROVIDER ################
+
 provider "aws" {
   region = "us-east-1"  # Replace with your preferred region
 }
+
 
 ##################################################################
 # Create a VPC / 2_Public_Subnets / Internet_Gateway
@@ -13,6 +75,7 @@ resource "aws_vpc" "my_vpc" {
     Name = "App_VPC_IaC"
   }
 }
+
 
 # Create a public subnet
 resource "aws_subnet" "public_subnet" {
@@ -271,16 +334,18 @@ resource "aws_security_group" "lb_security_group" {
 }
 
 
-##########################################################################
-# Target Group Creation for ALB 
-##########################################################################
+########################################################################################################
+# Target Groups Creation for ALB (Frontend / Backend)
+########################################################################################################
 
-resource "aws_lb_target_group" "web_tg" {
-  name     = "web-tg"
+
+# Frontend Target Group Creation: (httpd service)
+resource "aws_lb_target_group" "frontend_tg" {
+  name     = "frontend-tg"
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.my_vpc.id
-
+  
   health_check {
     path                = "/"  # Path to your health_check.html file OR "/" FOR GENERIC ROOT_PATH HEALTH_CHECK
     interval            = 30
@@ -290,15 +355,37 @@ resource "aws_lb_target_group" "web_tg" {
     matcher             = "200"
   }
 
-  tags = {
-    Name = "WebTargetGroup"
+    tags = {
+    Name = "FrontendTargetGroup"
   }
 }
 
 
-########################################################################################################
+# Backend Target Group Creation: (Node.js)
+resource "aws_lb_target_group" "backend_tg" {
+  name     = "backend-tg"
+  port     = 3000
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.my_vpc.id
+
+  health_check {
+  path                = "/health" # Backend Server Endpoint Health Check defined in server.js:
+  interval            = 30
+  timeout             = 5
+  healthy_threshold   = 2
+  unhealthy_threshold = 2
+  matcher             = "200"
+}
+    tags = {
+    Name = "BackendTargetGroup"
+  }
+}
+
+
+
+##################################################################################################################
 # Application Load Balancer (ALB) / ALB Listeners for HTTP and HTTPS Routing To The ALB Target Group 
-########################################################################################################
+##################################################################################################################
 
 # Define the Application Load Balancer
 resource "aws_lb" "web_alb" {
@@ -324,36 +411,97 @@ resource "aws_lb_listener" "http" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.web_tg.arn
+    target_group_arn = aws_lb_target_group.frontend_tg.arn
 
-#  default_action {
-#    type = "redirect"
-#
-#    redirect {
-#      protocol    = "HTTPS"
-#      port        = "443"
-#      status_code = "HTTP_301"
-#    }
+    redirect {
+      protocol    = "HTTPS"
+      port        = "443"
+      status_code = "HTTP_301"
+    }
 
   }
 }
 
+# Define ALB HTTPS Listener (With the relevant TLS Cert:)
+# Forward if path is `/` or `/*.html` or similar → frontend-tg
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.web_alb.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = aws_acm_certificate.alb_cert.arn
 
-## Define ALB HTTPS Listener
-#resource "aws_lb_listener" "https" {
-#  load_balancer_arn = aws_lb.web_alb.arn
-#  port              = 443
-#  protocol          = "HTTPS"
-#  ssl_policy        = "ELBSecurityPolicy-2016-08"
-#  certificate_arn   = aws_acm_certificate.alb_cert.arn
-#
-#  default_action {
-#    type             = "forward"
-#    target_group_arn = aws_lb_target_group.web_tg.arn
-#  }
-#}
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.frontend_tg.arn
+  }
+}
+
+# Listener Rule To Send /api/* To Backend:
+# Forward if path starts with `/api/*` → backend-tg
+resource "aws_lb_listener_rule" "backend_api_route" {
+  listener_arn = aws_lb_listener.https.arn
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend_tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*"]
+    }
+  }
+}
+
+########################################################################################################
+# Create Amazon-issued TLS certificate for our domain: [Specifies DNS validation.] / VALIDATE CERT 
+########################################################################################################
+
+# This means AWS will provide a DNS CNAME record that you must create (manually or via Terraform) 
+# in your domain's DNS (e.g., Cloudflare, Route 53) to prove ownership before the cert is issued.
+
+resource "aws_acm_certificate" "alb_cert" {
+  domain_name       = "xxsapxx.uk"
+  validation_method = "DNS"
+
+  tags = {
+    Environment = "prod"
+  }
+  
+  lifecycle {
+    create_before_destroy = true
+  }
+}
 
 
+# Create DNS validation record in Cloudflare:
+resource "cloudflare_dns_record" "cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.alb_cert.domain_validation_options : dvo.domain_name => {
+      name  = dvo.resource_record_name
+      type  = dvo.resource_record_type
+      value = dvo.resource_record_value
+    }
+  }
+
+  zone_id = var.cloudflare_zone_id
+  name    = each.value.name
+  type    = each.value.type
+  content = each.value.value
+  ttl     = 60
+}
+
+
+
+# Wait for the certificate to be validated and issued:
+resource "aws_acm_certificate_validation" "cert_validation" {
+  certificate_arn = aws_acm_certificate.alb_cert.arn
+
+  validation_record_fqdns = [
+    for record in cloudflare_dns_record.cert_validation : record.name
+  ]
+}
 
 
 ##################################################################
@@ -400,8 +548,11 @@ resource "aws_autoscaling_group" "web_server_asg" {
   desired_capacity     = 1
   vpc_zone_identifier  = [aws_subnet.public_subnet.id, aws_subnet.public_subnet_2.id]  # Deploy EC2s in both subnets
 
-  # Correct EC2 target group ARN here
-  target_group_arns    = [aws_lb_target_group.web_tg.arn]
+  # Correct ALB Target Groups ARN here:
+  target_group_arns = [
+  aws_lb_target_group.frontend_tg.arn,
+  aws_lb_target_group.backend_tg.arn
+  ]
 
   tag {
     key                 = "Name"
