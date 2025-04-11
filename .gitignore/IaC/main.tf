@@ -367,15 +367,6 @@ resource "aws_lb_target_group" "backend_tg" {
   port     = 3000
   protocol = "HTTP"
   vpc_id   = aws_vpc.my_vpc.id
-  
-  health_check {
-    path                = "/"  # Path to your health_check.html file OR "/" FOR GENERIC ROOT_PATH HEALTH_CHECK
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    matcher             = "200"
-  }
 
     tags = {
     Name = "BackendTargetGroup"
