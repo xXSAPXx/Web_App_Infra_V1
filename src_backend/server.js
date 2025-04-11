@@ -36,7 +36,7 @@ pool.getConnection((err, connection) => {
 });
 
 // Registration endpoint
-app.post('/register', async (req, res) => {
+app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     
     try {
@@ -59,7 +59,7 @@ app.post('/register', async (req, res) => {
 });
 
 // Login endpoint
-app.post('/login', (req, res) => {
+app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
 
     pool.query(
@@ -86,6 +86,12 @@ app.post('/login', (req, res) => {
     );
 });
 
+// Backend Server Endpoint Health Check for AWS ALB:
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+  });
+
+// Server Listens for response on port 3000: 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
