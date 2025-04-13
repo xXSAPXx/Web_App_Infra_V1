@@ -1,6 +1,6 @@
 
-#############################################
-############ CLOUDFLARE PROVIDER ############
+##########################################################################################
+############ CLOUDFLARE PROVIDER ######################## CLOUDFLARE PROVIDER ############
 
 terraform {
   required_providers {
@@ -38,27 +38,24 @@ data "cloudflare_zones" "selected" {
 
 
 # Change DNS Records to point to the AWS ALB DNS Name: 
-#resource "cloudflare_dns_record" "alb_record" { 
-#  zone_id = "var.cloudflare_zone_id"                        # Domain Zone ID
-#  comment = "Domain pointed to AWS_ALB"                 #
-#  name    = "app"                                       # Creates app.xxsapxx.uk
-#  type    = "CNAME"                                     # ALB doesn't have static IP, use CNAME
-#  content = aws_lb.web_alb.dns_name                     # Attach DNS Record to AWS ALB DNS
-#  ttl     = 1                                           # DNS Record TTL 
-#  proxied = true                                        # Enables Cloudflare HTTPS + caching
-#  settings = {
-#    ipv4_only = true
-#    ipv6_only = true
-#  }                                        
-#}
+resource "cloudflare_dns_record" "alb_record" { 
+  zone_id = "var.cloudflare_zone_id"                    # Domain Zone ID
+  comment = "Domain pointed to AWS_ALB"                 #
+  name    = "www"                                       # Creates www.xxsapxx.uk
+  type    = "CNAME"                                     # ALB doesn't have static IP, use CNAME
+  content = aws_lb.web_alb.dns_name                     # Attach DNS Record to AWS ALB DNS
+  ttl     = 1                                           # DNS Record TTL 
+  proxied = true                                        # Enables Cloudflare HTTPS + caching
+  settings = {
+    ipv4_only = true
+    ipv6_only = true
+  }                                        
+}
 
 
 
-
-
-
-##########################################
-############ AWS PROVIDER ################
+####################################################################################
+############ AWS PROVIDER ############################ AWS PROVIDER ################
 
 provider "aws" {
   region = "us-east-1"  # Replace with your preferred region
