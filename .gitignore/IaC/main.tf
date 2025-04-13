@@ -45,11 +45,7 @@ resource "cloudflare_dns_record" "alb_record" {
   type    = "CNAME"                                     # ALB doesn't have static IP, use CNAME
   content = aws_lb.web_alb.dns_name                     # Attach DNS Record to AWS ALB DNS
   ttl     = 1                                           # DNS Record TTL 
-  proxied = true                                        # Enables Cloudflare HTTPS + caching
-  settings = {
-    ipv4_only = true
-    ipv6_only = true
-  }                                        
+  proxied = true                                        # Enables Cloudflare HTTPS + caching                                        
 }
 
 
