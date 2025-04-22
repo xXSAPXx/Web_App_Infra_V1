@@ -39,7 +39,7 @@ data "cloudflare_zones" "selected" {
 
 # Change DNS Records to point to the AWS ALB DNS Name: 
 resource "cloudflare_dns_record" "alb_record" { 
-  zone_id = "var.cloudflare_zone_id"                    # Domain Zone ID
+  zone_id = var.cloudflare_zone_id                      # Domain Zone ID
   comment = "Domain pointed to AWS_ALB"                 #
   name    = "www"                                       # Creates www.xxsapxx.uk
   type    = "CNAME"                                     # ALB doesn't have static IP, use CNAME
