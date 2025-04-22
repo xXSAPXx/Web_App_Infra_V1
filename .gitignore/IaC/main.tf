@@ -179,10 +179,14 @@ resource "aws_security_group" "rds_sg" {
 resource "aws_db_instance" "mydb" {
   allocated_storage    = 20
   engine               = "mysql"
+  engine_version       = "8.0.35"
   instance_class       = "db.t3.micro"
-  db_name              = "calc_app_rds_iac"
-  username             = "admin"
-  password             = "12345678"
+  storage_encrypted    = true
+
+#db_name              = "calc_app_rds_iac"    # No need since we restore from snapshot.
+#username             = "admin"               # No need since we restore from snapshot.
+#password             = "12345678"            # No need since we restore from snapshot.
+
   parameter_group_name = "default.mysql8.0"
   publicly_accessible  = false
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
