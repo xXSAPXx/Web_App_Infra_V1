@@ -459,6 +459,7 @@ resource "aws_lb_listener_rule" "backend_api_route" {
 # in your domain's DNS (e.g., Cloudflare, Route 53) to prove ownership before the cert is issued.
 resource "aws_acm_certificate" "alb_cert" {
   domain_name       = "xxsapxx.uk"
+  subject_alternative_names = ["www.xxsapxx.uk"] # Added the www subdomain here
   validation_method = "DNS"
 
   tags = {
@@ -486,6 +487,7 @@ resource "cloudflare_dns_record" "cert_validation" {
   type    = each.value.type
   content = each.value.value
   ttl     = 60
+  proxied = false                   # IMPORTANT: Validation records MUST NOT be proxied by Cloudflare
 }
 
 
