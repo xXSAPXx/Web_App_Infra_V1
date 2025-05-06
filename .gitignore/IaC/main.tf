@@ -303,7 +303,7 @@ locals {
 # Security Group for the EC2s (CREATED IN THE NEW VPC)
 ##################################################################
 
-resource "aws_security_group" "firstsec" {
+resource "aws_security_group" "web_servers_sg" {
   vpc_id = aws_vpc.my_vpc.id
 
   ingress {
@@ -335,7 +335,7 @@ resource "aws_security_group" "firstsec" {
   }
 
   tags = {
-    Name = "FirstSEC"
+    Name = "web_servers_sg"
   }
 }
 
@@ -572,7 +572,7 @@ resource "aws_launch_template" "web_server_template" {
   }
 
   network_interfaces {
-    security_groups = [aws_security_group.firstsec.id]
+    security_groups = [aws_security_group.web_servers_sg.id]
   }
 
   # Ensure the launch configuration is created only after the RDS instance
@@ -595,7 +595,7 @@ resource "aws_autoscaling_group" "web_server_asg" {
   desired_capacity     = 1
   vpc_zone_identifier  = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]  # Deploy EC2s in both private subnets
 
-  # Correct ALB Target Groups ARN here:
+  # This ALB acts like a FRONTEND and BACKEND at the same time so we add both ALB target groups here: 
   target_group_arns = [
   aws_lb_target_group.frontend_tg.arn,
   aws_lb_target_group.backend_tg.arn
