@@ -1,6 +1,6 @@
 
-##########################################################################################
-############ CLOUDFLARE PROVIDER ######################## CLOUDFLARE PROVIDER ############
+################################################################################################################
+############ CLOUDFLARE PROVIDER ######################## CLOUDFLARE PROVIDER ##################################
 
 terraform {
   required_providers {
@@ -50,17 +50,17 @@ resource "cloudflare_dns_record" "alb_record" {
 
 
 
-####################################################################################
-############ AWS PROVIDER ############################ AWS PROVIDER ################
+##########################################################################################################
+############ AWS PROVIDER ############################ AWS PROVIDER ######################################
 
 provider "aws" {
   region = "us-east-1"  # Replace with your preferred region
 }
 
 
-##################################################################
-# Create a VPC / 2_Public_Subnets / Internet_Gateway
-##################################################################
+###################################################################################
+# Create a VPC / 2_Public_Subnets for teh NAT and ALB / Internet_Gateway
+###################################################################################
 
 resource "aws_vpc" "my_vpc" {
   cidr_block = "10.0.0.0/24"
@@ -73,13 +73,13 @@ resource "aws_vpc" "my_vpc" {
 
 
 # Create a public subnet
-resource "aws_subnet" "public_subnet" {
+resource "aws_subnet" "public_subnet_1" {
   vpc_id            = aws_vpc.my_vpc.id
   cidr_block        = "10.0.0.0/28"
   availability_zone = "us-east-1a"   	# Replace with your preferred AZ
   map_public_ip_on_launch = true  		# Enable this to auto-assign public IPs
   tags = {
-    Name = "Public_Subnet_IaC"
+    Name = "Public_Subnet_1_IaC"
   }
 }
 
@@ -105,19 +105,36 @@ resource "aws_internet_gateway" "igw" {
 }
 
 
+
 ##################################################################
-# Create 2 private_subnets for the MySQL DB / SEC GROUP 
+# Create NAT GATEWAY in only 1 public subnet in 1 AZ
+##################################################################
+
+# NAT Gateway in public subnet AZ1
+resource "aws_eip" "nat_eip" {
+  domain = "vpc"
+}
+
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = aws_subnet.public_subnet_1.id
+}
+
+
+
+##################################################################
+# Create 2 private_subnets for the MySQL DB / ASG / SEC GROUP 
 ##################################################################
 
 
 # Create a private subnet in the same AZ as the first public subnet
-resource "aws_subnet" "private_subnet" {
+resource "aws_subnet" "private_subnet_1" {
   vpc_id            = aws_vpc.my_vpc.id
   cidr_block        = "10.0.0.32/28"          # Make sure the CIDR block doesn't overlap with the public subnet
   availability_zone = "us-east-1a"            # Same AZ as the first public subnet
   map_public_ip_on_launch = true              # Auto-assign public IPs
   tags = {
-    Name = "RDS_Private_Subnet_IaC"
+    Name = "Private_Subnet_1_IaC"
   }
 }
 
@@ -140,7 +157,7 @@ resource "aws_subnet" "private_subnet_2" {
 resource "aws_db_subnet_group" "mydb_subnet_group" {
   name       = "mydb_subnet_group"
   subnet_ids = [
-    aws_subnet.private_subnet.id,
+    aws_subnet.private_subnet_1.id,
     aws_subnet.private_subnet_2.id
   ]
 
@@ -151,7 +168,70 @@ resource "aws_db_subnet_group" "mydb_subnet_group" {
 
 
 
-# Create a security group for the RDS instance
+##############################################################################
+# Create Route_Tables for both public and private subnets: 
+##############################################################################
+
+
+############### PUBLIC ROUTING TABLE and SUBNETS: ###############
+# All traffic from the 2 public subnets are going to the Internet Gateway: 
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0" # Any traffic destined for an address outside the VPC will be directed to the VPC internet gateway
+    gateway_id = aws_internet_gateway.igw.id    
+  }
+
+  tags = {
+    Name = "public_rt_IaC"
+  }
+}
+
+# Associate the route table with public_subnet_1
+resource "aws_route_table_association" "public_rt_assoc" {
+  subnet_id      = aws_subnet.public_subnet_1.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+# Associate the route table with public_subnet_2
+resource "aws_route_table_association" "public_rt_assoc_2" {
+  subnet_id      = aws_subnet.public_subnet_2.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+
+############### PRIVATE ROUTING TABLE and SUBNETS: ###############
+# All traffic from the private subnets are going to the NAT Gateway: 
+resource "aws_route_table" "private_rt" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat.id
+  }
+}
+
+##### PRIVATE SUBNETS: ##### 
+# Associate the route table with the 1st PRIVATE subnet:
+resource "aws_route_table_association" "private_rt_assoc" {
+  subnet_id      = aws_subnet.private_subnet_1.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+# Associate the route table with the 2nd PRIVATE subnet: 
+resource "aws_route_table_association" "private_rt_assoc_2" {
+  subnet_id      = aws_subnet.private_subnet_2.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+
+
+
+##################################################################
+# Create a security group for the RDS instance:
+##################################################################
+
 resource "aws_security_group" "rds_sg" {
   vpc_id = aws_vpc.my_vpc.id
 
@@ -173,7 +253,6 @@ resource "aws_security_group" "rds_sg" {
     Name = "App_RDS_SG_IaC"
   }
 }
-
 
 ################################################################################
 # Create an RDS Instance in the Private Subnet Group (2 private_subnets)
@@ -216,38 +295,6 @@ locals {
   userdata = templatefile("${path.module}/userdata_for_launch_config.tpl", {
     db_endpoint = aws_db_instance.mydb.endpoint
   })
-}
-
-
-
-##################################################################
-# Create a route table for the public subnet
-##################################################################
-
-resource "aws_route_table" "public_rt" {
-  vpc_id = aws_vpc.my_vpc.id
-
-  route {
-    cidr_block = "0.0.0.0/0" 					# Any traffic destined for an address outside the VPC will be directed to the VPC internet gateway
-    gateway_id = aws_internet_gateway.igw.id    
-  }
-
-  tags = {
-    Name = "public_rt_IaC"
-  }
-}
-
-# Associate the route table with the public subnet
-resource "aws_route_table_association" "public_rt_assoc" {
-  subnet_id      = aws_subnet.public_subnet.id
-  route_table_id = aws_route_table.public_rt.id
-}
-
-
-# Associate the route table with the second public subnet
-resource "aws_route_table_association" "public_rt_assoc_2" {
-  subnet_id      = aws_subnet.public_subnet_2.id
-  route_table_id = aws_route_table.public_rt.id
 }
 
 
@@ -392,7 +439,7 @@ resource "aws_lb" "web_alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.lb_security_group.id]
-  subnets            = [aws_subnet.public_subnet.id, aws_subnet.public_subnet_2.id]   # We need 2 Subnets for the ALB to work
+  subnets            = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]   # We need 2 Subnets for the ALB to work
   
   
   enable_deletion_protection = false
@@ -546,7 +593,7 @@ resource "aws_autoscaling_group" "web_server_asg" {
   min_size             = 1
   max_size             = 3
   desired_capacity     = 1
-  vpc_zone_identifier  = [aws_subnet.public_subnet.id, aws_subnet.public_subnet_2.id]  # Deploy EC2s in both subnets
+  vpc_zone_identifier  = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]  # Deploy EC2s in both private subnets
 
   # Correct ALB Target Groups ARN here:
   target_group_arns = [
