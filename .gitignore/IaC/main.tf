@@ -226,6 +226,23 @@ resource "aws_route_table_association" "private_rt_assoc_2" {
 }
 
 
+##############################################################################
+# Create Route53 Private Zone for the private subnets: 
+##############################################################################
+
+resource "aws_route53_zone" "private" {
+  name = "internal.xxsapxx.local"
+  vpc {
+    vpc_id = aws_vpc.my_vpc.id
+  }
+  comment = "Private zone for internal DNS resolution"
+}
+
+
+
+
+
+
 
 
 ##################################################################
