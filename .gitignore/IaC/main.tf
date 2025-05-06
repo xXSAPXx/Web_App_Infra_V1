@@ -112,7 +112,7 @@ resource "aws_internet_gateway" "igw" {
 
 # NAT Gateway in public subnet AZ1
 resource "aws_eip" "nat_eip" {
-  vpc = true
+  domain = "vpc"
 }
 
 resource "aws_nat_gateway" "nat" {
