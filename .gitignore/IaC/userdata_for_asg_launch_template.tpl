@@ -43,7 +43,7 @@ cd $BACKEND_DIR
 sudo npm install
 
 # Create virtual host configuration
-cat <<EOL | sudo tee /etc/httpd/conf.d/calculator.conf
+cat <<EOL | tee /etc/httpd/conf.d/calculator.conf
 <VirtualHost *:80>
     DocumentRoot "$CLONE_DIR/public_frontend"
     <Directory "$CLONE_DIR/public_frontend">
@@ -121,7 +121,7 @@ chown node_exporter:node_exporter /usr/local/bin/node_exporter
 
 
 # SystemD Config: 
-cat <<EOL | sudo tee /etc/systemd/system/node_exporter.service
+cat <<EOL | tee /etc/systemd/system/node_exporter.service
 [Unit]
 Description=Node Exporter
 Documentation=https://prometheus.io/docs/guides/node-exporter/
