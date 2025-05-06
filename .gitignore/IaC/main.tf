@@ -134,7 +134,7 @@ resource "aws_subnet" "private_subnet_1" {
   availability_zone = "us-east-1a"            # Same AZ as the first public subnet
   map_public_ip_on_launch = true              # Auto-assign public IPs
   tags = {
-    Name = "RDS_Private_Subnet_1_IaC"
+    Name = "Private_Subnet_1_IaC"
   }
 }
 
