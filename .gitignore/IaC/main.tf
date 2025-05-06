@@ -292,7 +292,7 @@ output "rds_endpoint" {
 
 
 locals {
-  userdata = templatefile("${path.module}/userdata_for_launch_config.tpl", {
+  userdata = templatefile("${path.module}/userdata_for_asg_launch_template.tpl", {
     db_endpoint = aws_db_instance.mydb.endpoint
   })
 }

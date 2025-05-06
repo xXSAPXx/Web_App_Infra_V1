@@ -1,5 +1,9 @@
 #!/bin/bash
 
+
+##############################################################################################
+######################### INSTALL AND START APACHE / NODE_JS SERVERS #########################
+
 ################### Variables ########################
 REPO_URL="https://gitlab.com/devops7375008/DevOps_APP.git"
 CLONE_DIR="/var/www/html/calculator"
@@ -65,3 +69,60 @@ sudo systemctl restart httpd
 
 # Start Node.js 
 nohup node $BACKEND_DIR/server.js > $BACKEND_DIR/server.log 2>&1 &
+
+
+
+#####################################################################################
+###################### AUTOMATIC (Hostname) DNS REGISTRATION ########################
+
+
+
+
+
+
+
+
+
+
+
+
+#####################################################################################
+############################### INSTALL NODE EXPORTER ###############################
+
+# Node_exporter version: (1.9.0):
+useradd -M -r -s /bin/false node_exporter
+mkdir /var/lib/node_exporter
+cd /var/lib/node_exporter
+wget https://github.com/prometheus/node_exporter/releases/download/v1.9.0/node_exporter-1.9.0.linux-amd64.tar.gz
+tar -xzf node_exporter-1.9.0.linux-amd64.tar.gz
+cp node_exporter-1.9.0.linux-amd64/node_exporter /usr/local/bin
+chown node_exporter:node_exporter /usr/local/bin/node_exporter
+
+
+# SystemD Config: 
+cat <<EOL | sudo tee /etc/systemd/system/node_exporter.service
+[Unit]
+Description=Node Exporter
+Documentation=https://prometheus.io/docs/guides/node-exporter/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+Restart=on-failure
+ExecStart=/usr/local/bin/node_exporter \
+  --web.listen-address=:9100
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+
+# Reload all systemd services: 
+chmod 664 /etc/systemd/system/node_exporter.service
+sudo systemctl daemon-reload
+sudo systemctl enable node_exporter.service
+sudo systemctl start node_exporter.service
+systemctl status node_exporter.service
