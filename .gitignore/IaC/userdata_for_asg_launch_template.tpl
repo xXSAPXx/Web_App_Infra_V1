@@ -75,13 +75,34 @@ nohup node $BACKEND_DIR/server.js > $BACKEND_DIR/server.log 2>&1 &
 #####################################################################################
 ###################### AUTOMATIC (Hostname) DNS REGISTRATION ########################
 
+# Fetch the unique EC2 instance ID from the AWS instance metadata service.
+INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+
+# Fetch the private IPv4 address of the EC2 instance.
+LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+
+# Construct a hostname using the private IP:
+HOSTNAME="web-server-${LOCAL_IP//./-}"
+
+# Set the system hostname to the constructed value:
+hostnamectl set-hostname $HOSTNAME
 
 
-
-
-
-
-
+## Automatic DNS Registration for every EC2 inside the ASG: [Under Construction!] 
+#aws route53 change-resource-record-sets --hosted-zone-id ${aws_route53_zone.private.zone_id} --change-batch '{
+#      "Changes": [{
+#        "Action": "UPSERT",
+#        "ResourceRecordSet": {
+#          "Name": "'$HOSTNAME'.internal.myapp.local",
+#          "Type": "A",
+#          "TTL": 60,
+#          "ResourceRecords": [{ "Value": "'$LOCAL_IP'" }]
+#        }
+#      }]
+#    }'
+#  EOF
+#  )
+#}
 
 
 
