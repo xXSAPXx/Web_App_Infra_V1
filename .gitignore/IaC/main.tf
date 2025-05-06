@@ -132,7 +132,7 @@ resource "aws_subnet" "private_subnet_1" {
   vpc_id            = aws_vpc.my_vpc.id
   cidr_block        = "10.0.0.32/28"          # Make sure the CIDR block doesn't overlap with the public subnet
   availability_zone = "us-east-1a"            # Same AZ as the first public subnet
-  map_public_ip_on_launch = true              # Auto-assign public IPs
+  map_public_ip_on_launch = false             # DO NOT Auto-assign public IPs!
   tags = {
     Name = "Private_Subnet_1_IaC"
   }
@@ -145,7 +145,7 @@ resource "aws_subnet" "private_subnet_2" {
   vpc_id            = aws_vpc.my_vpc.id
   cidr_block        = "10.0.0.48/28"          # Make sure the CIDR block doesn't overlap with the public subnet
   availability_zone = "us-east-1b"            # Same AZ as the second public subnet
-  map_public_ip_on_launch = true              # Auto-assign public IPs
+  map_public_ip_on_launch = false             # DO NOT Auto-assign public IPs!
   tags = {
     Name = "Private_Subnet_2_IaC"
   }
