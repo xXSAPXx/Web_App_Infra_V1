@@ -125,4 +125,3 @@ chmod 664 /etc/systemd/system/node_exporter.service
 sudo systemctl daemon-reload
 sudo systemctl enable node_exporter.service
 sudo systemctl start node_exporter.service
-systemctl status node_exporter.service
