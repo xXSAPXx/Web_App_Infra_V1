@@ -63,8 +63,8 @@ DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
 # Add the RDS endpoint to a file for application use
 echo "db_endpoint=${DB_ENDPOINT}" > $DB_ENDPOINT_FILE
 
-# Extract just the hostname from the endpoint with out the PORT:
-DB_ENDPOINT_NO_PORT=$(cat $DB_ENDPOINT_FILE | awk -F= '{print $2}' | sed 's/:3306//')
+# Extract just the hostname from the DB_Endpoint without the PORT:
+DB_ENDPOINT_NO_PORT=$(awk -F= '{sub(/:[0-9]+$/, "", $2); print $2}' $DB_ENDPOINT_FILE)
 
 # Replace db_endpoint placeholder in server.js
 sudo sed -i "s|database-1.c9cyo2wmq0yg.us-east-1.rds.amazonaws.com|$DB_ENDPOINT_NO_PORT|g" $BACKEND_DIR/server.js
