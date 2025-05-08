@@ -8,7 +8,6 @@
 REPO_URL="https://gitlab.com/devops7375008/DevOps_APP.git"
 CLONE_DIR="/var/www/html/calculator"
 BACKEND_DIR="/var/www/backend"
-DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
 
 
 # Install / Eenable HTTPD Service:
@@ -54,7 +53,7 @@ cat <<EOL | tee /etc/httpd/conf.d/calculator.conf
 EOL
 
 
-
+# DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
 # Add the RDS endpoint to a file for application use
 #echo "db_endpoint=${db_endpoint}" > $DB_ENDPOINT_FILE
 #
@@ -62,7 +61,7 @@ EOL
 #DB_ENDPOINT=$(cat $DB_ENDPOINT_FILE | awk -F= '{print $2}' | sed 's/:3306//')
 
 # Replace db_endpoint placeholder in server.js
-sudo sed -i "s|database-1.c9cyo2wmq0yg.us-east-1.rds.amazonaws.com|$db_endpoint|g" $BACKEND_DIR/server.js
+sudo sed -i "s|database-1.c9cyo2wmq0yg.us-east-1.rds.amazonaws.com|$DB_ENDPOINT|g" $BACKEND_DIR/server.js
 
 # Restart httpd to apply the new configuration
 sudo systemctl restart httpd
@@ -93,7 +92,7 @@ hostnamectl set-hostname $HOSTNAME
 yum install -y awscli
 
 # Automatic DNS Registration for every EC2 inside the ASG: 
-aws route53 change-resource-record-sets --hosted-zone-id "$ZONE_ID" --change-batch "{
+aws route53 change-resource-record-sets --hosted-zone-id "$PRIVATE_DNS_ZONE_ID" --change-batch "{
   \"Comment\": \"Register DNS Record for EC2 instance in Route53 private_zone \",
   \"Changes\": [{
     \"Action\": \"UPSERT\",

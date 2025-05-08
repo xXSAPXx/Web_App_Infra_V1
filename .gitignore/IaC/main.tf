@@ -238,15 +238,7 @@ resource "aws_route53_zone" "private" {
   comment = "Private zone for internal DNS resolution"
 }
 
-
-# Pass the ZONE_ID Variable to the userdata script:
-locals {
-  userdata = templatefile("${path.module}/userdata_for_asg_launch_template.tpl", {
-    ZONE_ID = aws_route53_zone.private.zone_id
-  })
-}
-
-
+# Pass the ZONE_ID Variable to the userdata script -- (IN RDS CREATION BLOCK)
 
 
 ##################################################################
@@ -307,10 +299,13 @@ output "rds_endpoint" {
 }
 
 
-# Pass the db_endpoint Variable to the userdata script:
+
+# Pass the DB_ENDPOINT Variable to the userdata script:
+# Pass the ZONE_ID Variable to the userdata script:
 locals {
   userdata = templatefile("${path.module}/userdata_for_asg_launch_template.tpl", {
-    db_endpoint = aws_db_instance.mydb.endpoint
+    DB_ENDPOINT = aws_db_instance.mydb.endpoint
+    PRIVATE_DNS_ZONE_ID = aws_route53_zone.private.zone_id
   })
 }
 
