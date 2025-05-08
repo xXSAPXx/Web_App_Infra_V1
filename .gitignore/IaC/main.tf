@@ -305,7 +305,7 @@ output "rds_endpoint" {
 locals {
   userdata = templatefile("${path.module}/userdata_for_asg_launch_template.tpl", {
     db_endpoint = aws_db_instance.mydb.endpoint
-    private_dns_zone_id = aws_route53_zone.private.zone_id
+    private_dns_zone_id = aws_route53_zone.private.zone.id
   })
 }
 
