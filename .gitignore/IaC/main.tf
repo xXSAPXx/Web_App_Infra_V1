@@ -239,8 +239,12 @@ resource "aws_route53_zone" "private" {
 }
 
 
-
-
+# Pass the ZONE_ID Variable to the userdata script:
+locals {
+  userdata = templatefile("${path.module}/userdata_for_asg_launch_template.tpl", {
+    ZONE_ID = aws_route53_zone.private.zone_id
+  })
+}
 
 
 
@@ -303,11 +307,7 @@ output "rds_endpoint" {
 }
 
 
-###########################################################################################
-# CREATING A TEMPLATE FILE (user_data) For VMs -- TERRAFORM PASSES THE rds_endpoint to it. 
-###########################################################################################
-
-
+# Pass the db_endpoint Variable to the userdata script:
 locals {
   userdata = templatefile("${path.module}/userdata_for_asg_launch_template.tpl", {
     db_endpoint = aws_db_instance.mydb.endpoint

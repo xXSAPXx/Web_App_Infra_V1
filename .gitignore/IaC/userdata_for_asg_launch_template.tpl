@@ -56,13 +56,13 @@ EOL
 
 
 # Add the RDS endpoint to a file for application use
-echo "db_endpoint=${db_endpoint}" > $DB_ENDPOINT_FILE
-
+#echo "db_endpoint=${db_endpoint}" > $DB_ENDPOINT_FILE
+#
 # Extract just the hostname from the endpoint
-DB_ENDPOINT=$(cat $DB_ENDPOINT_FILE | awk -F= '{print $2}' | sed 's/:3306//')
+#DB_ENDPOINT=$(cat $DB_ENDPOINT_FILE | awk -F= '{print $2}' | sed 's/:3306//')
 
-# Replace the placeholder in server.js
-sudo sed -i "s|database-1.c9cyo2wmq0yg.us-east-1.rds.amazonaws.com|$DB_ENDPOINT|g" $BACKEND_DIR/server.js
+# Replace db_endpoint placeholder in server.js
+sudo sed -i "s|database-1.c9cyo2wmq0yg.us-east-1.rds.amazonaws.com|$db_endpoint|g" $BACKEND_DIR/server.js
 
 # Restart httpd to apply the new configuration
 sudo systemctl restart httpd
@@ -75,36 +75,36 @@ nohup node $BACKEND_DIR/server.js > $BACKEND_DIR/server.log 2>&1 &
 #####################################################################################
 ###################### AUTOMATIC (Hostname) DNS REGISTRATION ########################
 
-# Fetch the unique EC2 instance ID from the AWS instance metadata service.
-INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+# Generate a token lastng 6-hours for the EC2 metadata retrival process from AWS: 
+TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` \
+&& curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/
 
 # Fetch the private IPv4 address of the EC2 instance.
-LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+LOCAL_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
 
 # Construct a hostname using the private IP:
-HOSTNAME="web-server-${LOCAL_IP//./-}"
+HOSTNAME="web-server-${LOCAL_IP//./-}.internal.xxsapxx.local"
 
 # Set the system hostname to the constructed value:
 hostnamectl set-hostname $HOSTNAME
 
 
-## Automatic DNS Registration for every EC2 inside the ASG: [Under Construction!] 
-#aws route53 change-resource-record-sets --hosted-zone-id ${aws_route53_zone.private.zone_id} --change-batch '{
-#      "Changes": [{
-#        "Action": "UPSERT",
-#        "ResourceRecordSet": {
-#          "Name": "'$HOSTNAME'.internal.myapp.local",
-#          "Type": "A",
-#          "TTL": 60,
-#          "ResourceRecords": [{ "Value": "'$LOCAL_IP'" }]
-#        }
-#      }]
-#    }'
-#  EOF
-#  )
-#}
+# Install AWS CLI: 
+yum install -y awscli
 
-
+# Automatic DNS Registration for every EC2 inside the ASG: 
+aws route53 change-resource-record-sets --hosted-zone-id "$ZONE_ID" --change-batch "{
+  \"Comment\": \"Register DNS Record for EC2 instance in Route53 private_zone \",
+  \"Changes\": [{
+    \"Action\": \"UPSERT\",
+    \"ResourceRecordSet\": {
+      \"Name\": \"$HOSTNAME\",
+      \"Type\": \"A\",
+      \"TTL\": 120,
+      \"ResourceRecords\": [{ \"Value\": \"$LOCAL_IP\" }]
+    }
+  }]
+}"
 
 
 #####################################################################################
