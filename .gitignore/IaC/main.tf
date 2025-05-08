@@ -304,8 +304,8 @@ output "rds_endpoint" {
 # Pass the ZONE_ID Variable to the userdata script:
 locals {
   userdata = templatefile("${path.module}/userdata_for_asg_launch_template.tpl", {
-    DB_ENDPOINT = aws_db_instance.mydb.endpoint
-    PRIVATE_DNS_ZONE_ID = aws_route53_zone.private.zone_id
+    db_endpoint = aws_db_instance.mydb.endpoint
+    private_dns_zone_id = aws_route53_zone.private.zone_id
   })
 }
 

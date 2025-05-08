@@ -9,6 +9,10 @@ REPO_URL="https://gitlab.com/devops7375008/DevOps_APP.git"
 CLONE_DIR="/var/www/html/calculator"
 BACKEND_DIR="/var/www/backend"
 
+# Variables from Terraform: 
+DB_ENDPOINT=$${db_endpoint}
+PRIVATE_DNS_ZONE_ID=$${private_dns_zone_id}
+
 
 # Install / Eenable HTTPD Service:
 sudo dnf install -y httpd
@@ -85,7 +89,7 @@ LOCAL_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/lat
 HOSTNAME="web-server-${LOCAL_IP//./-}.internal.xxsapxx.local"
 
 # Set the system hostname to the constructed value:
-hostnamectl set-hostname $HOSTNAME
+hostnamectl set-hostname {$HOSTNAME}
 
 
 # Install AWS CLI: 
