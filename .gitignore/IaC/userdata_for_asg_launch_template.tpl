@@ -57,15 +57,17 @@ cat <<EOL | tee /etc/httpd/conf.d/calculator.conf
 EOL
 
 
-# DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
+# Set the DB_ENDPOINT file for DB address parsing: 
+DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
+
 # Add the RDS endpoint to a file for application use
-#echo "db_endpoint=${db_endpoint}" > $DB_ENDPOINT_FILE
-#
-# Extract just the hostname from the endpoint
-#DB_ENDPOINT=$(cat $DB_ENDPOINT_FILE | awk -F= '{print $2}' | sed 's/:3306//')
+echo "db_endpoint=${DB_ENDPOINT}" > $DB_ENDPOINT_FILE
+
+# Extract just the hostname from the endpoint with out the PORT:
+DB_ENDPOINT_NO_PORT=$(cat $DB_ENDPOINT_FILE | awk -F= '{print $2}' | sed 's/:3306//')
 
 # Replace db_endpoint placeholder in server.js
-sudo sed -i "s|database-1.c9cyo2wmq0yg.us-east-1.rds.amazonaws.com|$DB_ENDPOINT|g" $BACKEND_DIR/server.js
+sudo sed -i "s|database-1.c9cyo2wmq0yg.us-east-1.rds.amazonaws.com|$DB_ENDPOINT_NO_PORT|g" $BACKEND_DIR/server.js
 
 # Restart httpd to apply the new configuration
 sudo systemctl restart httpd
