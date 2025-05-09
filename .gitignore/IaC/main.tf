@@ -312,47 +312,6 @@ locals {
 
 
 ##################################################################
-# Security Group for the EC2s (CREATED IN THE NEW VPC)
-##################################################################
-
-resource "aws_security_group" "web_servers_sg" {
-  vpc_id = aws_vpc.my_vpc.id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/24"] # Only inside VPC
-  }
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]   # SSH for testing purposes
-  }
-
-  ingress {
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/24"] # Only inside VPC
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "web_servers_sg"
-  }
-}
-
-
-##################################################################
 # Security Group allowing HTTP/HTTPS for the Public ALB
 ##################################################################
 
@@ -563,6 +522,48 @@ resource "aws_acm_certificate_validation" "cert_validation" {
 }
 
 
+
+##################################################################
+# Security Group for the EC2s (Web_Servers)
+##################################################################
+
+resource "aws_security_group" "web_servers_sg" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/24"] # Only inside VPC
+  }
+
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion_prometheus_sg.id] # Only the bastion_host can SSH here! 
+  }
+
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/24"] # Only inside VPC
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "web_servers_sg"
+  }
+}
+
+
 ##################################################################
 # Launch Template For Every EC2 Instance: 
 ##################################################################
@@ -696,5 +697,71 @@ resource "aws_autoscaling_policy" "scale_in_policy" {
 
 
 
+
+
+########################################################################
+# Security Group for the Public EC2 - Bastion + Prometheus server: 
+########################################################################
+
+resource "aws_security_group" "bastion_prometheus_sg" {
+  name        = "bastion-prometheus-sg"
+  description = "Allow SSH and Prometheus and Node_Exporter"
+  vpc_id      = aws_vpc.my_vpc.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 9100
+    to_port     = 9100
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
+
+########################################################################
+# Public EC2 - Jump_Host + Prometheus server:
+########################################################################
+
+resource "aws_instance" "bastion_prometheus" {
+  ami                    = "ami-0583d8c7a9c35822c"
+  instance_type          = "t2.micro"
+  subnet_id              = [aws_subnet.public_subnet_1.id]
+  vpc_security_group_ids = [aws_security_group.bastion_prometheus_sg.id] 
+  key_name               = "Test.env"
+  user_data              = "userdata_for_bastion_prometheus_host.tpl"
+
+  block_device_mappings {
+      device_name = "/dev/xvda"
+      ebs {
+        volume_size = 10
+        volume_type = "gp2"
+      }
+  }
+
+  tags = {
+    Name = "bastion-prometheus"
+  }
+}
 
 
