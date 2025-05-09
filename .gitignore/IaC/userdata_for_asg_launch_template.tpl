@@ -10,8 +10,8 @@ CLONE_DIR="/var/www/html/calculator"
 BACKEND_DIR="/var/www/backend"
 
 # Variables from Terraform: 
-DB_ENDPOINT=$${db_endpoint}
-PRIVATE_DNS_ZONE_ID=$${private_dns_zone_id}
+DB_ENDPOINT=${db_endpoint}
+PRIVATE_DNS_ZONE_ID=${private_dns_zone_id}
 
 
 #############################################################################################################
