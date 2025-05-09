@@ -141,8 +141,6 @@ sudo systemctl start nodeapp.service
 sudo rm -rf "$STAGING_DIR"
 
 
-
-
 #####################################################################################
 ###################### AUTOMATIC (Hostname) DNS REGISTRATION ########################
 
