@@ -45,7 +45,7 @@ sudo mv $CLONE_DIR/package.json $BACKEND_DIR/
 
 # Navigate to backend directory and install NodeJS dependencies
 cd $BACKEND_DIR
-sudo npm install
+sudo -u apache npm install
 
 # Create virtual host configuration
 sudo cat <<EOL | sudo tee /etc/httpd/conf.d/calculator.conf
@@ -69,8 +69,8 @@ DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
 sudo touch $DB_ENDPOINT_FILE
 sudo chmod 666 $DB_ENDPOINT_FILE
 
-# Add the RDS endpoint to a file for application use
-sudo echo "db_endpoint=$${DB_ENDPOINT}" > $DB_ENDPOINT_FILE
+# Add the RDS endpoint to a file for application use:
+echo "db_endpoint=$${DB_ENDPOINT}" | sudo tee $DB_ENDPOINT_FILE > /dev/null
 
 # Extract just the hostname from the DB_Endpoint without the PORT:
 DB_ENDPOINT_NO_PORT=$(sudo awk -F= '{sub(/:[0-9]+$/, "", $2); print $2}' $DB_ENDPOINT_FILE)
