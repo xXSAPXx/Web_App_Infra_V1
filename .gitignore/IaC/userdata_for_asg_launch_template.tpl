@@ -27,10 +27,10 @@ sudo systemctl enable httpd
 
 
 # Creating dedicated user for Node.js app:
-if ! id "${NODE_APP_USER}" &>/dev/null; then
-    sudo useradd -m -r -s /bin/false "${NODE_APP_USER}"
+if ! id "$NODE_APP_USER" &>/dev/null; then
+    sudo useradd -m -r -s /bin/false "$NODE_APP_USER"
 else
-    echo "User ${NODE_APP_USER} already exists."
+    echo "User $NODE_APP_USER already exists."
 fi
 
 
@@ -50,7 +50,7 @@ sudo mkdir -p "$BACKEND_DIR"
 sudo touch "$BACKEND_DIR/server.js" && sudo chown nodeapp:nodeapp "$BACKEND_DIR/server.js"
 sudo cp "$STAGING_DIR/src_backend/server.js" "$BACKEND_DIR/"
 sudo cp "$STAGING_DIR/package.json" "$BACKEND_DIR/"
-sudo chown -R "${NODE_APP_USER}:${NODE_APP_USER}" "$BACKEND_DIR"
+sudo chown -R "$NODE_APP_USER:$NODE_APP_USER" "$BACKEND_DIR"
 
 
 ################################################################################################################### 
@@ -59,9 +59,9 @@ sudo chown -R "${NODE_APP_USER}:${NODE_APP_USER}" "$BACKEND_DIR"
 # Set the DB_ENDPOINT file for DB address parsing: 
 DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
 
-# Create DB_ENDPOINT_FILE:
+# Create DB_ENDPOINT_FILE and adjust permissions:
 sudo touch $DB_ENDPOINT_FILE
-sudo chmod 666 $DB_ENDPOINT_FILE
+sudo chown "$NODE_APP_USER:$NODE_APP_USER" "$DB_ENDPOINT_FILE"
 
 # Add the RDS endpoint to a file for application use:
 echo "db_endpoint=$${DB_ENDPOINT}" | sudo tee $DB_ENDPOINT_FILE > /dev/null
@@ -85,9 +85,9 @@ cd "$BACKEND_DIR"
 
 # Use npm ci if package-lock.json is in the repo: 
 if [ -f "package-lock.json" ]; then
-    sudo -u "${NODE_APP_USER}" npm ci
+    sudo -u "$NODE_APP_USER" npm ci
 else
-    sudo -u "${NODE_APP_USER}" npm install
+    sudo -u "$NODE_APP_USER" npm install
 fi
 
 
@@ -117,9 +117,9 @@ After=network.target
 Environment="NODE_ENV=production"
 Environment="PORT=3000"
 Type=simple
-User=${NODE_APP_USER}
-WorkingDirectory=${BACKEND_DIR}
-ExecStart=/usr/bin/node ${BACKEND_DIR}/server.js
+User=$NODE_APP_USER
+WorkingDirectory=$BACKEND_DIR
+ExecStart=/usr/bin/node $BACKEND_DIR/server.js
 Restart=on-failure
 RestartSec=10
 
@@ -178,21 +178,24 @@ sudo aws route53 change-resource-record-sets --hosted-zone-id "$PRIVATE_DNS_ZONE
 #####################################################################################
 ############################### INSTALL NODE EXPORTER ###############################
 
+NODE_EXPORTER_DIR="/var/lib/node_exporter"
+NODE_EXPORTER_USER="node_exporter"
+
 # Node_exporter version: (1.9.0):
-sudo useradd -M -r -s /bin/false node_exporter
-sudo mkdir /var/lib/node_exporter
-cd /var/lib/node_exporter
+sudo useradd -M -r -s /bin/false $NODE_EXPORTER_USER
+sudo mkdir -p $NODE_EXPORTER_DIR
+cd $NODE_EXPORTER_DIR
 sudo dnf install -y wget
 sudo wget https://github.com/prometheus/node_exporter/releases/download/v1.9.0/node_exporter-1.9.0.linux-amd64.tar.gz
 sudo tar -xzf node_exporter-1.9.0.linux-amd64.tar.gz
 sudo cp node_exporter-1.9.0.linux-amd64/node_exporter /usr/local/bin
-sudo chown node_exporter:node_exporter /usr/local/bin/node_exporter
+sudo chown "$NODE_EXPORTER_USER":"$NODE_EXPORTER_USER" /usr/local/bin/node_exporter
 
 
 # SystemD Config: 
 sudo cat <<EOL | sudo tee /etc/systemd/system/node_exporter.service
 [Unit]
-Description=Node Exporter
+Description=Node_Exporter
 Documentation=https://prometheus.io/docs/guides/node-exporter/
 Wants=network-online.target
 After=network-online.target
