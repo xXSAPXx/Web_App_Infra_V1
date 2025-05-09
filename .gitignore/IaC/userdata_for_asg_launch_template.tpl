@@ -2,65 +2,59 @@
 
 
 ##############################################################################################
-######################### INSTALL AND START APACHE / NODE_JS SERVERS #########################
+############################ System and Terraform Variables:  ################################
 
-################### Variables ########################
+# Variables:
 REPO_URL="https://gitlab.com/devops7375008/DevOps_APP.git"
-CLONE_DIR="/var/www/html/calculator"
-BACKEND_DIR="/var/www/backend"
+APP_BASE_DIR="/var/www"
+FRONTEND_DIR="$APP_BASE_DIR/html/calculator"  # Actual web root will be $FRONTEND_DIR/public_frontend
+BACKEND_DIR="$APP_BASE_DIR/backend"
+STAGING_DIR="/tmp/app_deploy_$(date +%s)"
+NODE_APP_USER="nodeapp"                       # Dedicated user for the Node.js app
 
 # Variables from Terraform: 
 DB_ENDPOINT=${db_endpoint}
 PRIVATE_DNS_ZONE_ID=${private_dns_zone_id}
 
 
-#############################################################################################################
-###################### INSTALL / CONFIGURE APACHE AND NODE_JS (Frondend and Backend) ########################
+##############################################################################################################
+#################################### Configure Frondend and Backend: #########################################
 
 # Install / Eenable HTTPD Service:
 sudo dnf install -y httpd
 sudo systemctl start httpd
 sudo systemctl enable httpd
 
-# Create directory for the application
-sudo mkdir -p $CLONE_DIR
 
-# Install git
+# Creating dedicated user for Node.js app:
+if ! id "${NODE_APP_USER}" &>/dev/null; then
+    sudo useradd -m -r -s /bin/false "${NODE_APP_USER}"
+else
+    echo "User ${NODE_APP_USER} already exists."
+fi
+
+
+# Install git:
 sudo dnf install -y git
-sudo git clone $REPO_URL $CLONE_DIR
-sudo chown -R apache:apache $CLONE_DIR
+
+# Clone git repo to STAGING_DIR: 
+sudo git clone "$REPO_URL" "$STAGING_DIR"
+
+# Setting up Frontend: 
+sudo mkdir -p "$FRONTEND_DIR/public_frontend"
+sudo cp -R "$STAGING_DIR/public_frontend/." "$FRONTEND_DIR/public_frontend/"
+sudo chown -R apache:apache "$FRONTEND_DIR/public_frontend"
+
+# Setting up Backend: 
+sudo mkdir -p "$BACKEND_DIR"
+sudo touch "$BACKEND_DIR/server.js" && sudo chown nodeapp:nodeapp "$BACKEND_DIR/server.js"
+sudo cp "$STAGING_DIR/src_backend/server.js" "$BACKEND_DIR/"
+sudo cp "$STAGING_DIR/package.json" "$BACKEND_DIR/"
+sudo chown -R "${NODE_APP_USER}:${NODE_APP_USER}" "$BACKEND_DIR"
 
 
-# Install Node.js 18.x from NodeSource
-curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
-sudo dnf install -y nodejs 
-
-# Create directory for the backend and set up Node.js environment
-sudo mkdir -p $BACKEND_DIR
-sudo chown -R apache:apache $BACKEND_DIR
-
-# Move server.js and package.json to the backend directory
-sudo mv $CLONE_DIR/src_backend/server.js $BACKEND_DIR/
-sudo mv $CLONE_DIR/package.json $BACKEND_DIR/
-
-# Navigate to backend directory and install NodeJS dependencies
-cd $BACKEND_DIR
-sudo -u apache npm install
-
-# Create virtual host configuration
-sudo cat <<EOL | sudo tee /etc/httpd/conf.d/calculator.conf
-<VirtualHost *:80>
-    DocumentRoot "$CLONE_DIR/public_frontend"
-    <Directory "$CLONE_DIR/public_frontend">
-        AllowOverride None
-        Require all granted
-    </Directory>
-</VirtualHost>
-EOL
-
-
-################################################################################################################## 
-############################## GET THE DB_ENDPOINT AND START APACHE AND NODE_JS ##################################
+################################################################################################################### 
+################################## Set the DB_ENDPOINT on the Backend: ############################################
 
 # Set the DB_ENDPOINT file for DB address parsing: 
 DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
@@ -78,12 +72,74 @@ DB_ENDPOINT_NO_PORT=$(sudo awk -F= '{sub(/:[0-9]+$/, "", $2); print $2}' $DB_END
 # Replace db_endpoint placeholder in server.js
 sudo sed -i "s|REPLACE_WITH_DB_ENDPOINT|$DB_ENDPOINT_NO_PORT|g" $BACKEND_DIR/server.js
 
-# Restart httpd to apply the new configuration
+
+######################################################################################################################## 
+########################### Configure and Start APACHE and NODE_JS Servers #############################################
+
+# Install Node.js 18.x
+curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+sudo dnf install -y nodejs
+
+# Install Backend NodeJS Dependencies: 
+cd "$BACKEND_DIR"
+
+# Use npm ci if package-lock.json is in the repo: 
+if [ -f "package-lock.json" ]; then
+    sudo -u "${NODE_APP_USER}" npm ci
+else
+    sudo -u "${NODE_APP_USER}" npm install
+fi
+
+
+# Create Apache_Host Configuration:
+sudo cat <<EOL | sudo tee /etc/httpd/conf.d/calculator.conf
+<VirtualHost *:80>
+    DocumentRoot "$FRONTEND_DIR/public_frontend"
+    <Directory "$FRONTEND_DIR/public_frontend">
+        AllowOverride None
+        Require all granted
+    </Directory>
+</VirtualHost>
+EOL
+
+
+# Restart httpd service: 
 sudo systemctl restart httpd
 
+
+# Setting up Node.js Backend Service (systemd): 
+sudo bash -c "cat > /etc/systemd/system/nodeapp.service" <<EOT
+[Unit]
+Description=Node.js Backend Application for Calculator
+After=network.target
+
+[Service]
+Environment="NODE_ENV=production"
+Environment="PORT=3000"
+Type=simple
+User=${NODE_APP_USER}
+WorkingDirectory=${BACKEND_DIR}
+ExecStart=/usr/bin/node ${BACKEND_DIR}/server.js
+Restart=on-failure
+RestartSec=10
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nodeapp-calculator
+
+[Install]
+WantedBy=multi-user.target
+EOT
+
+
 # Start Node.js with logging: 
-sudo touch $BACKEND_DIR/server.log && sudo chmod 666 $BACKEND_DIR/server.log
-sudo nohup node $BACKEND_DIR/server.js > $BACKEND_DIR/server.log 2>&1 &
+sudo systemctl daemon-reload
+sudo systemctl enable nodeapp.service
+sudo systemctl start nodeapp.service
+
+# Clean up Staging Directory: 
+sudo rm -rf "$STAGING_DIR"
+
 
 
 
@@ -97,7 +153,7 @@ TOKEN=(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metad
 LOCAL_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
 
 # Construct a hostname using the private IP:
-HOSTNAME="web-server-$$\{LOCAL_IP//./-}.internal.xxsapxx.local"
+HOSTNAME="web-server-$${LOCAL_IP//./-}.internal.xxsapxx.local"
 
 # Set the system hostname to the constructed value:
 sudo hostnamectl set-hostname $HOSTNAME
