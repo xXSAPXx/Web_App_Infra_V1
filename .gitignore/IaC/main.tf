@@ -616,7 +616,7 @@ resource "aws_autoscaling_group" "web_server_asg" {
 
   tag {
     key                 = "Name"
-    value               = "Web_Server_IaC"
+    value               = "Web-Server-IaC"
     propagate_at_launch = true
   }
 
