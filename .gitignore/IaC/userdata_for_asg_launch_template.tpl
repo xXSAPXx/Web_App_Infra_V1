@@ -108,7 +108,7 @@ sudo systemctl restart httpd
 
 
 # Setting up Node.js Backend Service (systemd): 
-sudo cat <<EOL | sudo tee /etc/systemd/system/nodeapp.service"
+sudo cat <<EOL | sudo tee /etc/systemd/system/nodeapp.service
 [Unit]
 Description=Node.js Backend Application for Calculator
 After=network.target
