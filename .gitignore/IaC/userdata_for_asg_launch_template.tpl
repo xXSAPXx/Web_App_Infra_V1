@@ -14,6 +14,9 @@ DB_ENDPOINT=$${db_endpoint}
 PRIVATE_DNS_ZONE_ID=$${private_dns_zone_id}
 
 
+#############################################################################################################
+###################### INSTALL / CONFIGURE APACHE AND NODE_JS (Frondend and Backend) ########################
+
 # Install / Eenable HTTPD Service:
 sudo dnf install -y httpd
 sudo systemctl start httpd
@@ -42,11 +45,11 @@ sudo mv $CLONE_DIR/src_backend/server.js $BACKEND_DIR/
 sudo mv $CLONE_DIR/package.json $BACKEND_DIR/
 
 # Navigate to backend directory and install NodeJS dependencies
-cd $BACKEND_DIR
+sudo cd $BACKEND_DIR
 sudo npm install
 
 # Create virtual host configuration
-cat <<EOL | tee /etc/httpd/conf.d/calculator.conf
+sudo cat <<EOL | sudo tee /etc/httpd/conf.d/calculator.conf
 <VirtualHost *:80>
     DocumentRoot "$CLONE_DIR/public_frontend"
     <Directory "$CLONE_DIR/public_frontend">
@@ -57,14 +60,21 @@ cat <<EOL | tee /etc/httpd/conf.d/calculator.conf
 EOL
 
 
+################################################################################################################## 
+############################## GET THE DB_ENDPOINT AND START APACHE AND NODE_JS ##################################
+
 # Set the DB_ENDPOINT file for DB address parsing: 
 DB_ENDPOINT_FILE="$BACKEND_DIR/AWS_RDS_ENDPOINT"
 
+# Create DB_ENDPOINT_FILE:
+sudo touch $DB_ENDPOINT_FILE
+sudo chmod 666 $DB_ENDPOINT_FILE
+
 # Add the RDS endpoint to a file for application use
-echo "db_endpoint=${DB_ENDPOINT}" > $DB_ENDPOINT_FILE
+sudo echo "db_endpoint=$${DB_ENDPOINT}" > $DB_ENDPOINT_FILE
 
 # Extract just the hostname from the DB_Endpoint without the PORT:
-DB_ENDPOINT_NO_PORT=$(awk -F= '{sub(/:[0-9]+$/, "", $2); print $2}' $DB_ENDPOINT_FILE)
+DB_ENDPOINT_NO_PORT=$(sudo awk -F= '{sub(/:[0-9]+$/, "", $2); print $2}' $DB_ENDPOINT_FILE)
 
 # Replace db_endpoint placeholder in server.js
 sudo sed -i "s|database-1.c9cyo2wmq0yg.us-east-1.rds.amazonaws.com|$DB_ENDPOINT_NO_PORT|g" $BACKEND_DIR/server.js
@@ -73,7 +83,7 @@ sudo sed -i "s|database-1.c9cyo2wmq0yg.us-east-1.rds.amazonaws.com|$DB_ENDPOINT_
 sudo systemctl restart httpd
 
 # Start Node.js 
-nohup node $BACKEND_DIR/server.js > $BACKEND_DIR/server.log 2>&1 &
+sudo nohup node $BACKEND_DIR/server.js > $BACKEND_DIR/server.log 2>&1 &
 
 
 
@@ -97,7 +107,7 @@ sudo hostnamectl set-hostname $HOSTNAME
 sudo dnf install -y awscli
 
 # Automatic DNS Registration for every EC2 inside the ASG: 
-aws route53 change-resource-record-sets --hosted-zone-id "$PRIVATE_DNS_ZONE_ID" --change-batch "{
+sudo aws route53 change-resource-record-sets --hosted-zone-id "$PRIVATE_DNS_ZONE_ID" --change-batch "{
   \"Comment\": \"Register DNS Record for EC2 instance in Route53 private_zone \",
   \"Changes\": [{
     \"Action\": \"UPSERT\",
@@ -115,17 +125,18 @@ aws route53 change-resource-record-sets --hosted-zone-id "$PRIVATE_DNS_ZONE_ID" 
 ############################### INSTALL NODE EXPORTER ###############################
 
 # Node_exporter version: (1.9.0):
-useradd -M -r -s /bin/false node_exporter
-mkdir /var/lib/node_exporter
-cd /var/lib/node_exporter
-wget https://github.com/prometheus/node_exporter/releases/download/v1.9.0/node_exporter-1.9.0.linux-amd64.tar.gz
-tar -xzf node_exporter-1.9.0.linux-amd64.tar.gz
-cp node_exporter-1.9.0.linux-amd64/node_exporter /usr/local/bin
-chown node_exporter:node_exporter /usr/local/bin/node_exporter
+sudo useradd -M -r -s /bin/false node_exporter
+sudo mkdir /var/lib/node_exporter
+sudo cd /var/lib/node_exporter
+sudo dnf install -y wget
+sudo wget https://github.com/prometheus/node_exporter/releases/download/v1.9.0/node_exporter-1.9.0.linux-amd64.tar.gz
+sudo tar -xzf node_exporter-1.9.0.linux-amd64.tar.gz
+sudo cp node_exporter-1.9.0.linux-amd64/node_exporter /usr/local/bin
+sudo chown node_exporter:node_exporter /usr/local/bin/node_exporter
 
 
 # SystemD Config: 
-cat <<EOL | tee /etc/systemd/system/node_exporter.service
+sudo cat <<EOL | sudo tee /etc/systemd/system/node_exporter.service
 [Unit]
 Description=Node Exporter
 Documentation=https://prometheus.io/docs/guides/node-exporter/
@@ -146,7 +157,7 @@ EOL
 
 
 # Reload all systemd services: 
-chmod 664 /etc/systemd/system/node_exporter.service
+sudo chmod 664 /etc/systemd/system/node_exporter.service
 sudo systemctl daemon-reload
 sudo systemctl enable node_exporter.service
 sudo systemctl start node_exporter.service
