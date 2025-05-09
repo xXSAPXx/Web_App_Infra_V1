@@ -616,7 +616,7 @@ resource "aws_autoscaling_group" "web_server_asg" {
 
   tag {
     key                 = "Name"
-    value               = "WEB_SERVER_IaC"
+    value               = "Web_Server_IaC"
     propagate_at_launch = true
   }
 
@@ -757,7 +757,7 @@ resource "aws_instance" "bastion_prometheus" {
   }
 
   tags = {
-    Name = "bastion-prometheus"
+    Name = "Bastion-Prometheus-IaC"
   }
 }
 
