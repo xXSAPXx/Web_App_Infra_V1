@@ -749,8 +749,8 @@ resource "aws_instance" "bastion_prometheus" {
   subnet_id              = aws_subnet.public_subnet_2.id
   vpc_security_group_ids = [aws_security_group.bastion_prometheus_sg.id] 
   key_name               = "Test.env"
-  user_data              = "userdata_for_bastion_prometheus_host.tpl"
-
+  user_data              = "${file("userdata_for_bastion_prometheus_host.tpl")}"
+                          
   root_block_device {
     volume_size = 10
     volume_type = "gp2"
