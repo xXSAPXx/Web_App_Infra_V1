@@ -746,17 +746,14 @@ resource "aws_security_group" "bastion_prometheus_sg" {
 resource "aws_instance" "bastion_prometheus" {
   ami                    = "ami-0583d8c7a9c35822c"
   instance_type          = "t2.micro"
-  subnet_id              = [aws_subnet.public_subnet_1.id]
+  subnet_id              = aws_subnet.public_subnet_1.id
   vpc_security_group_ids = [aws_security_group.bastion_prometheus_sg.id] 
   key_name               = "Test.env"
   user_data              = "userdata_for_bastion_prometheus_host.tpl"
 
-  block_device_mappings {
-      device_name = "/dev/xvda"
-      ebs {
-        volume_size = 10
-        volume_type = "gp2"
-      }
+  root_block_device {
+    volume_size = 10
+    volume_type = "gp2"
   }
 
   tags = {
