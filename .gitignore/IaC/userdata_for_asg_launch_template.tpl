@@ -108,7 +108,7 @@ sudo systemctl restart httpd
 
 
 # Setting up Node.js Backend Service (systemd): 
-sudo bash -c "cat > /etc/systemd/system/nodeapp.service" <<EOT
+sudo cat <<EOL | sudo tee /etc/systemd/system/nodeapp.service"
 [Unit]
 Description=Node.js Backend Application for Calculator
 After=network.target
@@ -129,7 +129,7 @@ SyslogIdentifier=nodeapp-calculator
 
 [Install]
 WantedBy=multi-user.target
-EOT
+EOL
 
 
 # Start Node.js with logging: 
