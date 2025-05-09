@@ -38,14 +38,13 @@ sudo dnf install -y nodejs
 # Create directory for the backend and set up Node.js environment
 sudo mkdir -p $BACKEND_DIR
 sudo chown -R apache:apache $BACKEND_DIR
-sudo npm init -y
 
 # Move server.js and package.json to the backend directory
 sudo mv $CLONE_DIR/src_backend/server.js $BACKEND_DIR/
 sudo mv $CLONE_DIR/package.json $BACKEND_DIR/
 
 # Navigate to backend directory and install NodeJS dependencies
-sudo cd $BACKEND_DIR
+cd $BACKEND_DIR
 sudo npm install
 
 # Create virtual host configuration
@@ -77,12 +76,13 @@ sudo echo "db_endpoint=$${DB_ENDPOINT}" > $DB_ENDPOINT_FILE
 DB_ENDPOINT_NO_PORT=$(sudo awk -F= '{sub(/:[0-9]+$/, "", $2); print $2}' $DB_ENDPOINT_FILE)
 
 # Replace db_endpoint placeholder in server.js
-sudo sed -i "s|database-1.c9cyo2wmq0yg.us-east-1.rds.amazonaws.com|$DB_ENDPOINT_NO_PORT|g" $BACKEND_DIR/server.js
+sudo sed -i "s|REPLACE_WITH_DB_ENDPOINT|$DB_ENDPOINT_NO_PORT|g" $BACKEND_DIR/server.js
 
 # Restart httpd to apply the new configuration
 sudo systemctl restart httpd
 
-# Start Node.js 
+# Start Node.js with logging: 
+sudo touch $BACKEND_DIR/server.log && sudo chmod 666 $BACKEND_DIR/server.log
 sudo nohup node $BACKEND_DIR/server.js > $BACKEND_DIR/server.log 2>&1 &
 
 
@@ -127,7 +127,7 @@ sudo aws route53 change-resource-record-sets --hosted-zone-id "$PRIVATE_DNS_ZONE
 # Node_exporter version: (1.9.0):
 sudo useradd -M -r -s /bin/false node_exporter
 sudo mkdir /var/lib/node_exporter
-sudo cd /var/lib/node_exporter
+cd /var/lib/node_exporter
 sudo dnf install -y wget
 sudo wget https://github.com/prometheus/node_exporter/releases/download/v1.9.0/node_exporter-1.9.0.linux-amd64.tar.gz
 sudo tar -xzf node_exporter-1.9.0.linux-amd64.tar.gz

@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 
 // MySQL database connection
 const pool = mysql.createPool({
-  host: 'database-1.c9cyo2wmq0yg.us-east-1.rds.amazonaws.com',
+  host: 'REPLACE_WITH_DB_ENDPOINT',
   user: 'admin',
   password: '12345678',
   database: 'CALC_APP_DB',
