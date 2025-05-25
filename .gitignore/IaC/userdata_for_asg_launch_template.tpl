@@ -47,7 +47,6 @@ sudo chown -R apache:apache "$FRONTEND_DIR/public_frontend"
 
 # Setting up Backend: 
 sudo mkdir -p "$BACKEND_DIR"
-sudo touch "$BACKEND_DIR/server.js" && sudo chown nodeapp:nodeapp "$BACKEND_DIR/server.js"
 sudo cp "$STAGING_DIR/src_backend/server.js" "$BACKEND_DIR/"
 sudo cp "$STAGING_DIR/package.json" "$BACKEND_DIR/"
 sudo chown -R "$NODE_APP_USER:$NODE_APP_USER" "$BACKEND_DIR"
