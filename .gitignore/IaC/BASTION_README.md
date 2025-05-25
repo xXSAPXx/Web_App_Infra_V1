@@ -14,16 +14,16 @@ $acl = Get-Acl $path
 $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
     "BUILTIN\Users", "FullControl", "Allow"
 )
-$acl.RemoveAccessRule($rule)  # Remove access for BUILTIN\Users
-Set-Acl $path $acl  # Apply the updated ACL
+$acl.RemoveAccessRule($rule)  
+Set-Acl $path $acl  
 
 $acl = Get-Acl $path
 $acl.SetAccessRuleProtection($True, $False)  # Protect the file from inheritance
 $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
     "simeo", "FullControl", "Allow"
 )
-$acl.AddAccessRule($rule)  # Only your user account should have full control
-Set-Acl $path $acl  # Apply the updated ACL
+$acl.AddAccessRule($rule)  
+Set-Acl $path $acl  
 ==========================================================================================
 
 
