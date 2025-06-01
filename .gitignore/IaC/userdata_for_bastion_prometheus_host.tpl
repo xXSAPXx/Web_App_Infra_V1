@@ -72,6 +72,7 @@ sudo systemctl start prometheus.service
 
 
 # Configure Prometheus settings: [AUTO DISCOVERY SERVICE + SEND METRICS TO GRAFANA CLOUD]
+# IAM ROLE NEEDED FOR THE AUTO DISCOVERY SERVICE: 
 sudo cat <<EOL | sudo tee $PROMETHEUS_CONF_DIR/prometheus.yml
 # My global config:
 global:
