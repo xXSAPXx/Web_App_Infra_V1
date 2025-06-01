@@ -183,22 +183,26 @@ sudo dnf install -y awscli
 #####################################################################################
 ############################### INSTALL NODE EXPORTER ###############################
 
+NODE_EXPORTER_UNIT_FILE="/etc/systemd/system/node_exporter.service"
 NODE_EXPORTER_DIR="/var/lib/node_exporter"
+NODE_EXPORTER_BINARY_DIR="/usr/local/bin"
 NODE_EXPORTER_USER="node_exporter"
+NODE_EXPORTER_VERSION="1.9.0"
 
-# Node_exporter version: (1.9.0):
+
+# Node_exporter version:
 sudo useradd -M -r -s /bin/false $NODE_EXPORTER_USER
 sudo mkdir -p $NODE_EXPORTER_DIR
 cd $NODE_EXPORTER_DIR
 sudo dnf install -y wget
-sudo wget https://github.com/prometheus/node_exporter/releases/download/v1.9.0/node_exporter-1.9.0.linux-amd64.tar.gz
-sudo tar -xzf node_exporter-1.9.0.linux-amd64.tar.gz
-sudo cp node_exporter-1.9.0.linux-amd64/node_exporter /usr/local/bin
-sudo chown "$NODE_EXPORTER_USER":"$NODE_EXPORTER_USER" /usr/local/bin/node_exporter
+sudo wget https://github.com/prometheus/node_exporter/releases/download/v$NODE_EXPORTER_VERSION/node_exporter-$NODE_EXPORTER_VERSION.linux-amd64.tar.gz
+sudo tar -xzf node_exporter-$NODE_EXPORTER_VERSION.linux-amd64.tar.gz
+sudo cp node_exporter-$NODE_EXPORTER_VERSION.linux-amd64/node_exporter $NODE_EXPORTER_BINARY_DIR
+sudo chown "$NODE_EXPORTER_USER":"$NODE_EXPORTER_USER" $NODE_EXPORTER_BINARY_DIR/node_exporter
 
 
 # SystemD Config: 
-sudo cat <<EOL | sudo tee /etc/systemd/system/node_exporter.service
+sudo cat <<EOL | sudo tee $NODE_EXPORTER_UNIT_FILE
 [Unit]
 Description=Node_Exporter
 Documentation=https://prometheus.io/docs/guides/node-exporter/
@@ -210,7 +214,7 @@ User=$NODE_EXPORTER_USER
 Group=$NODE_EXPORTER_USER
 Type=simple
 Restart=on-failure
-ExecStart=/usr/local/bin/node_exporter \
+ExecStart=$NODE_EXPORTER_BINARY_DIR/node_exporter \
   --web.listen-address=:9100
 
 [Install]
@@ -219,7 +223,7 @@ EOL
 
 
 # Reload all systemd services: 
-sudo chmod 664 /etc/systemd/system/node_exporter.service
+sudo chmod 664 $NODE_EXPORTER_UNIT_FILE
 sudo systemctl daemon-reload
 sudo systemctl enable node_exporter.service
 sudo systemctl start node_exporter.service
