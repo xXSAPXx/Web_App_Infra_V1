@@ -18,7 +18,7 @@ resource "aws_db_instance" "mydb" {
   publicly_accessible  = var.rds_publicly_accessible
   
   vpc_security_group_ids = var.rds_security_group_ids
-  db_subnet_group_name   = var.db_subnet_group_name
+  db_subnet_group_name   = var.rds_subnet_group_name
 
   snapshot_identifier  = var.rds_snapshot_identifier  # Replace with your snapshot ID from which you want the DB to be created 
   maintenance_window   = var.maintenance_window

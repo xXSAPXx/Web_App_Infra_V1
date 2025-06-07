@@ -71,6 +71,11 @@ variable "rds_security_group_ids" {
   description = "Sec_group id for the RDS Instance"
 }
 
+variable "rds_subnet_group_name" {
+  type        = list(string)
+  description = "RDS Subnet Group ID"
+}
+
 variable "skip_final_snapshot" {
   type        = bool
   description = "CREATE or SKIP the final snapshot on instance termination"

@@ -124,7 +124,7 @@ module "database" {
   publicly_accessible  = false
   
   rds_security_group_ids = [aws_security_group.rds_sg.id]
-  db_subnet_group_name   = aws_db_subnet_group.mydb_subnet_group.name
+  rds_subnet_group_name  = aws_db_subnet_group.mydb_subnet_group.name
 
   snapshot_identifier  = "calculator-app-rds-final-snapshot-iac"  # Replace with your snapshot ID from which you want the DB to be created 
   maintenance_window   = "mon:19:00-mon:19:30"
