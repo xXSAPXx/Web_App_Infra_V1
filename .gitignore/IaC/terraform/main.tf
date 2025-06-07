@@ -2,6 +2,7 @@
 ################################################################################################################
 ############ CLOUDFLARE PROVIDER ######################## CLOUDFLARE PROVIDER ##################################
 
+# Cloudflare Provider: 
 terraform {
   required_providers {
     cloudflare = {
@@ -10,43 +11,16 @@ terraform {
   }
 }
 
-# Set Variable for CloudFlare API_KEY: 
-variable "cloudflare_api_token" {
-  type        = string
-  description = "API token with DNS edit permissions"
-  sensitive   = true
-  nullable    = false
+
+# Create just a Cloudflare DNS record to the ALB CNAME - [SSL cert validation is handled in module alb_cert_validation]
+module "cloudflare_dns" {
+  source               = "./modules/cloudflare"
+  cloudflare_api_token = var.cloudflare_api_token
+  cloudflare_zone_id   = var.cloudflare_zone_id
+  domain_name          = "xxsapxx.uk"
+  alb_dns_name         = aws_lb.web_alb.dns_name
 }
 
-# Set Variable for CloudFlare ZONE_ID: 
-variable "cloudflare_zone_id" {
-  type        = string
-  description = "Zone ID for the Cloudflare domain"
-  nullable    = false
-}
-
-
-provider "cloudflare" {
-  api_token = var.cloudflare_api_token
-}
-
-
-# Select Domain: 
-data "cloudflare_zones" "selected" {
-    name = "xxsapxx.uk"
-}
-
-
-# Change DNS Records to point to the AWS ALB DNS Name: 
-resource "cloudflare_dns_record" "alb_record" { 
-  zone_id = var.cloudflare_zone_id                      # Domain Zone ID
-  comment = "Domain pointed to AWS_ALB"                 #
-  name    = "www"                                       # Creates www.xxsapxx.uk
-  type    = "CNAME"                                     # ALB doesn't have static IP, use CNAME
-  content = aws_lb.web_alb.dns_name                     # Attach DNS Record to AWS ALB DNS
-  ttl     = 1                                           # DNS Record TTL 
-  proxied = true                                        # Enables Cloudflare HTTPS + caching                                        
-}
 
 
 
@@ -501,7 +475,6 @@ resource "cloudflare_dns_record" "cert_validation" {
       value = dvo.resource_record_value
     }
   }
-
   zone_id = var.cloudflare_zone_id
   name    = each.value.name
   type    = each.value.type
@@ -509,7 +482,6 @@ resource "cloudflare_dns_record" "cert_validation" {
   ttl     = 60
   proxied = false                   # IMPORTANT: Validation records MUST NOT be proxied by Cloudflare
 }
-
 
 
 # Wait for the certificate to be validated and issued:
