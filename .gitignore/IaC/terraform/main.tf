@@ -12,16 +12,19 @@ terraform {
 }
 
 
-# Create just a Cloudflare DNS record to the ALB CNAME - [SSL cert validation is handled in module alb_cert_validation]
+# Create a Cloudflare DNS record to the ALB CNAME or IP - [SSL cert validation is handled in module alb_cert_validation]
 module "cloudflare_dns" {
   source               = "./modules/cloudflare"
   cloudflare_api_token = var.cloudflare_api_token
   cloudflare_zone_id   = var.cloudflare_zone_id
-  domain_name          = "xxsapxx.uk"
+  select_domain_name   = "xxsapxx.uk"
+  comment              = "Domain pointed to AWS_ALB"
+  sub_domain_name      = "www"
+  dns_record_type      = "CNAME" 
+  dns_ttl              = 1
+  proxied              = true 
   alb_dns_name         = aws_lb.web_alb.dns_name
 }
-
-
 
 
 ###################################################################################################################
@@ -33,9 +36,9 @@ provider "aws" {
 }
 
 
-#####################################################################################
-# CREATE -- VPC/Subnets/Nat_Gateway/RDS_Subnet_Group/Routing/Route53_Private_Zone
-#####################################################################################
+# Networking: 
+# Crate -- VPC / Subnets / Nat_Gateway / RDS_Subnet_Group /Routing / Route53_Private_Zone
+#----------------------------------------------------------------------------------------
 
 module "vpc" {
   source = "./modules/vpc"

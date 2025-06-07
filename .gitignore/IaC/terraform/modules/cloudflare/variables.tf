@@ -18,9 +18,47 @@ variable "cloudflare_zone_id" {
 }
 
 
-variable "domain_name" {
+variable "select_domain_name" {
   type        = string
   description = "Domain name managed in Cloudflare (e.g., xxsapxx.uk)"
+}
+
+
+variable "comment" {
+  type        = string
+  description = "Comment for the DNS Record"
+}
+
+
+variable "sub_domain_name" {
+  type        = string
+  description = "Choose a subdomain for the DNS Record"
+}
+
+
+variable "dns_record_type" {
+  type        = string
+  description = "DNS Record Type"
+  validation {
+    condition     = contains(["A", "AAAA", "CNAME", "TXT"], var.dns_record_type)
+    error_message = "Only A, AAAA, CNAME, or TXT record types are allowed."
+  }
+}
+
+
+variable "dns_ttl" {
+  type        = number
+  description = "DNS TTL"
+  validation {
+    condition = contains([1, 120, 300, 600, 900, 1800, 3600, 7200, 14400, 28800, 43200, 86400], var.dns_ttl)
+    error_message = "TTL must be 1 (automatic) or one of Cloudflare’s supported TTL values."
+  }
+}
+
+
+variable "proxied" {
+  type        = bool
+  description = "Proxied through CloudFlare: True/False"
 }
 
 
