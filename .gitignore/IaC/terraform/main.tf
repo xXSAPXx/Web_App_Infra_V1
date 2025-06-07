@@ -267,11 +267,6 @@ resource "aws_db_instance" "mydb" {
   skip_final_snapshot       = false
 }
 
-# Output the RDS endpoint
-output "rds_endpoint" {
-  value = aws_db_instance.mydb.endpoint
-}
-
 
 
 # Pass the DB_ENDPOINT Variable to the userdata script:
