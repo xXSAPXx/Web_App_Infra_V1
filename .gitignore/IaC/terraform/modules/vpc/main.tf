@@ -4,41 +4,42 @@
 # Create a VPC / 2_Public_Subnets for teh NAT and ALB / Internet_Gateway
 ###################################################################################
 
+# Create the VPC: 
 resource "aws_vpc" "my_vpc" {
-  cidr_block = "10.0.0.0/24"
+  cidr_block = var.vpc_cidr_block
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
-    Name = "App_VPC_IaC"
+    Name = var.vpc_name
   }
 }
 
 
-# Create a public subnet
+# Create a Public_Subnet_1:
 resource "aws_subnet" "public_subnet_1" {
   vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = "10.0.0.0/28"
-  availability_zone = "us-east-1a"   	# Replace with your preferred AZ
-  map_public_ip_on_launch = true  		# Enable this to auto-assign public IPs
+  cidr_block        = var.public_subnet_1_cidr
+  availability_zone = var.availability_zone_1 # Replace with your preferred AZ
+  map_public_ip_on_launch = true  		        # Enable this to auto-assign public IPs
   tags = {
     Name = "Public_Subnet_1_IaC"
   }
 }
 
 
-# Create a second public subnet in a different AZ
+# Create Public_Subnet_2:
 resource "aws_subnet" "public_subnet_2" {
   vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = "10.0.0.16/28" 			# Make sure the CIDR block doesn't overlap with the first subnet
-  availability_zone = "us-east-1b"   			# Replace with another AZ in your preferred region
-  map_public_ip_on_launch = true  				# Enable this to auto-assign public IPs
+  cidr_block        = var.public_subnet_2_cidr 	# Make sure the CIDR block doesn't overlap with the first subnet
+  availability_zone = var.availability_zone_2   # Replace with another AZ in your preferred region
+  map_public_ip_on_launch = true  				      # Enable this to auto-assign public IPs
   tags = {
     Name = "Public_Subnet_2_IaC"
   }
 }
 
 
-# Create an internet gateway
+# Create an internet gateway:
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.my_vpc.id
   tags = {
@@ -59,7 +60,8 @@ resource "aws_eip" "nat_eip" {
 
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat_eip.id
-  subnet_id     = aws_subnet.public_subnet_1.id
+  subnet_id     = var.nat_gateway_public_subnet_id
+  depends_on    = [aws_internet_gateway.igw]
 }
 
 
@@ -69,12 +71,12 @@ resource "aws_nat_gateway" "nat" {
 ##################################################################
 
 
-# Create a private subnet in the same AZ as the first public subnet
+# Create a Private_Subnet_1:
 resource "aws_subnet" "private_subnet_1" {
   vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = "10.0.0.32/28"          # Make sure the CIDR block doesn't overlap with the public subnet
-  availability_zone = "us-east-1a"            # Same AZ as the first public subnet
-  map_public_ip_on_launch = false             # DO NOT Auto-assign public IPs!
+  cidr_block        = var.private_subnet_1_cidr # Make sure the CIDR block doesn't overlap with the public subnet
+  availability_zone = var.availability_zone_1   # Same AZ as the first public subnet
+  map_public_ip_on_launch = false               # DO NOT Auto-assign public IPs!
   tags = {
     Name = "Private_Subnet_1_IaC"
   }
@@ -82,12 +84,12 @@ resource "aws_subnet" "private_subnet_1" {
 
 
 
-# Create a private subnet in the same AZ as the second public subnet
+# Create a Private_Subnet_2:
 resource "aws_subnet" "private_subnet_2" {
   vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = "10.0.0.48/28"          # Make sure the CIDR block doesn't overlap with the public subnet
-  availability_zone = "us-east-1b"            # Same AZ as the second public subnet
-  map_public_ip_on_launch = false             # DO NOT Auto-assign public IPs!
+  cidr_block        = var.private_subnet_2_cidr # Make sure the CIDR block doesn't overlap with the public subnet
+  availability_zone = var.availability_zone_2   # Same AZ as the second public subnet
+  map_public_ip_on_launch = false               # DO NOT Auto-assign public IPs!
   tags = {
     Name = "Private_Subnet_2_IaC"
   }
@@ -104,7 +106,7 @@ resource "aws_db_subnet_group" "mydb_subnet_group" {
   ]
 
   tags = {
-    Name = "App_DB_Subnet_Group_IaC"
+    Name = var.rds_subnet_group_name
   }
 }
 
@@ -130,6 +132,7 @@ resource "aws_route_table" "public_rt" {
   }
 }
 
+##### PUBLIC SUBNETS: ##### 
 # Associate the route table with public_subnet_1
 resource "aws_route_table_association" "public_rt_assoc" {
   subnet_id      = aws_subnet.public_subnet_1.id
@@ -172,12 +175,13 @@ resource "aws_route_table_association" "private_rt_assoc_2" {
 # Create Route53 Private Zone for the private subnets: 
 ##############################################################################
 
+# Pass the Private_ZONE_ID Variable to the userdata script -- (IN RDS CREATION BLOCK)
+
 resource "aws_route53_zone" "private" {
-  name = "internal.xxsapxx.local"
+  name = var.private_zone_name
   vpc {
     vpc_id = aws_vpc.my_vpc.id
   }
   comment = "Private zone for internal DNS resolution"
 }
 
-# Pass the ZONE_ID Variable to the userdata script -- (IN RDS CREATION BLOCK)
