@@ -13,6 +13,7 @@ variable "cloudflare_api_token" {
 variable "cloudflare_zone_id" {
   type        = string
   description = "Zone ID for the Cloudflare domain"
+  sensitive   = true
   nullable    = false
 }
 

@@ -12,5 +12,6 @@ variable "san" {
 
 variable "cloudflare_zone_id" {
   type        = string
+  sensitive   = true
   description = "Zone ID for the Cloudflare domain"
 }
