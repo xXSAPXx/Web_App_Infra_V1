@@ -101,8 +101,7 @@ vpc_id = aws_vpc.my_vpc.id
 
 
 
-# RDS MySQL Databases: 
-# Create RDS configuration and RDS Sec_Group
+# RDS Configuration and Creation:
 ######################################################################################
 
 module "database" {
@@ -137,6 +136,28 @@ module "database" {
 
 
 
+
+# Create and EC2: (Bastion Prometheus Host)
+######################################################################################
+module "bastion_prometheus" {
+  source          = "./modules/bastion_prometheus_host"
+
+
+  # --- Bastion_Prometheus_Host Settings ---
+  ami_id                  = "ami-0583d8c7a9c35822c"
+  instance_type           = "t2.micro"
+  subnet_id               = aws_subnet.public_subnet_2.id
+  bastion_sec_group_ids   = [aws_security_group.bastion_prometheus_sg.id]
+  key_name                = "Test.env"
+  user_data_path          = "${path.module}/userdata_for_bastion_prometheus_host.tpl"
+  
+  volume_size = 10
+  volume_type = "gp2"
+  
+  tags = {
+    Name = "Bastion-Prometheus-IaC"
+  }
+}
 
 
 
@@ -206,7 +227,7 @@ resource "aws_lb" "web_alb" {
   enable_deletion_protection = false
 
   tags = {
-    Name = "web-alb"
+    Name = "asg-web-servers-alb"
   }
 }
 
@@ -264,7 +285,7 @@ resource "aws_lb_listener_rule" "backend_api_route" {
 
 
 
-########################################################################################################
+
 # Create Amazon-issued TLS certificate for our domain: [Specifies DNS validation.] AND VALIDATE CERT! 
 ########################################################################################################
 
@@ -418,25 +439,4 @@ resource "aws_autoscaling_policy" "scale_in_policy" {
 
 
 
- 
-# Create Sec_Group and EC2: (Bastion Prometheus Host)
-######################################################################################
-module "bastion_prometheus" {
-  source          = "./modules/bastion_prometheus_host"
 
-
-  # --- Bastion_Prometheus_Host Settings ---
-  ami_id                  = "ami-0583d8c7a9c35822c"
-  instance_type           = "t2.micro"
-  subnet_id               = aws_subnet.public_subnet_2.id
-  bastion_sec_group_ids   = [aws_security_group.bastion_prometheus_sg.id]
-  key_name                = "Test.env"
-  user_data_path          = "${path.module}/userdata_for_bastion_prometheus_host.tpl"
-  
-  volume_size = 10
-  volume_type = "gp2"
-  
-  tags = {
-    Name = "Bastion-Prometheus-IaC"
-  }
-}
