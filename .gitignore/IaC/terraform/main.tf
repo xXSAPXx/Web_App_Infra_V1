@@ -309,7 +309,7 @@ module "alb_cert" {
   domain_name         = "xxsapxx.uk"
   san                 = ["www.xxsapxx.uk"]
   cloudflare_zone_id  = var.cloudflare_zone_id
-
+  validation_method   = "DNS"
 
 
 
