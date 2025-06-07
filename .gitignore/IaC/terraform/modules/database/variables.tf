@@ -66,6 +66,11 @@ variable "rds_publicly_accessible" {
   default     = false
 }
 
+variable "rds_security_group_ids" {
+  type        = list(string)
+  description = "Sec_group id for the RDS Instance"
+}
+
 variable "skip_final_snapshot" {
   type        = bool
   description = "CREATE or SKIP the final snapshot on instance termination"

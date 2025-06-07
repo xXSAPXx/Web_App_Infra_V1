@@ -101,9 +101,6 @@ vpc_id = aws_vpc.my_vpc.id
 
 
 
-
-
-
 # RDS MySQL Databases: 
 # Create RDS configuration and RDS Sec_Group
 ######################################################################################
@@ -127,7 +124,7 @@ module "database" {
   parameter_group_name = "default.mysql8.0"
   publicly_accessible  = false
   
-  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  rds_security_group_ids = [aws_security_group.rds_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.mydb_subnet_group.name
 
   snapshot_identifier  = "calculator-app-rds-final-snapshot-iac"  # Replace with your snapshot ID from which you want the DB to be created 
@@ -432,7 +429,7 @@ module "bastion_prometheus" {
   ami_id                  = "ami-0583d8c7a9c35822c"
   instance_type           = "t2.micro"
   subnet_id               = aws_subnet.public_subnet_2.id
-  vpc_security_group_ids  = [aws_security_group.bastion_prometheus_sg.id]
+  bastion_sec_group_ids   = [aws_security_group.bastion_prometheus_sg.id]
   key_name                = "Test.env"
   user_data_path          = "${path.module}/userdata_for_bastion_prometheus_host.tpl"
   

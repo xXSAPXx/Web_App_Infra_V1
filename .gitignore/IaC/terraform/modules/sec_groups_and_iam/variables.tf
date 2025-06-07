@@ -24,12 +24,6 @@ variable "rds_security_group_name" {
   default     = "RDS_SG_IaC"
 }
 
-variable "vpc_security_group_ids" {
-  type        = list(string)
-  description = "Sec_group id for the RDS Instance"
-}
-
-
 
 #########################################
 # BASTION HOST SEC GROUP VARIABLES: 
@@ -52,6 +46,12 @@ variable "bastion_host_cidr_block" {
   type        = string
   description = "CIDR block used for ingress and egress inside the VPC."
   default     = "0.0.0.0/0"
+}
+
+
+variable "vpc_security_group_ids" {
+  type        = list(string)
+  description = "Sec_group id for the RDS Instance"
 }
 
 

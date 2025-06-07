@@ -19,7 +19,7 @@ variable "subnet_id" {
   type        = string
 }
 
-variable "vpc_security_group_ids" {
+variable "bastion_sec_group_ids" {
   type        = list(string)
   description = "Sec_group id for the Bastion EC2"
 }
