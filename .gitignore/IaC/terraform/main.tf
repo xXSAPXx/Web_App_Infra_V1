@@ -37,8 +37,8 @@ provider "aws" {
 
 
 # Networking: 
-# Crate -- VPC / Subnets / Nat_Gateway / RDS_Subnet_Group /Routing / Route53_Private_Zone
-#----------------------------------------------------------------------------------------
+# Crate VPC / Subnets / Nat_Gateway / RDS_Subnet_Group /Routing / Route53_Private_Zone
+######################################################################################
 
 module "vpc" {
   source = "./modules/vpc"
@@ -70,70 +70,51 @@ module "vpc" {
 
 
 
+# RDS MySQL Databases: 
+# Create RDS configuration and RDS Sec_Group
+######################################################################################
 
+module "database" {
+  source = "./modules/database"
 
-##################################################################
-# Create a security group for the RDS instance:
-##################################################################
+# -------- RDS Configuration Settings --------
 
-resource "aws_security_group" "rds_sg" {
-  vpc_id = aws_vpc.my_vpc.id
-
-  ingress {
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/24"]  # (Only inside VPC)
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["10.0.0.0/24"] # (Only inside VPC)
-  }
-
-  tags = {
-    Name = "App_RDS_SG_IaC"
-  }
-}
-
-################################################################################
-# Create an RDS Instance in the Private Subnet Group (2 private_subnets)
-################################################################################
-resource "aws_db_instance" "mydb" {
-  allocated_storage    = 20
   engine               = "mysql"
   engine_version       = "8.0.35"
   instance_class       = "db.t3.micro"
+  allocated_storage    = 20
   storage_encrypted    = true
 
-#db_name              = "calc_app_rds_iac"    # No need since we restore from snapshot.
-#username             = "admin"               # No need since we restore from snapshot.
-#password             = "12345678"            # No need since we restore from snapshot.
+  #db_name             = "calc_app_rds_iac"    # No need since we restore from snapshot.
+  #username            = "admin"               # No need since we restore from snapshot.
+  #password            = "12345678"            # No need since we restore from snapshot.
 
+  port                 = "3306"
   parameter_group_name = "default.mysql8.0"
   publicly_accessible  = false
+  
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
-  db_subnet_group_name = aws_db_subnet_group.mydb_subnet_group.name
+  db_subnet_group_name   = aws_db_subnet_group.mydb_subnet_group.name
 
   snapshot_identifier  = "calculator-app-rds-final-snapshot-iac"  # Replace with your snapshot ID from which you want the DB to be created 
+  maintenance_window   = "mon:19:00-mon:19:30"
   
   # Prevent deletion of the database
-  final_snapshot_identifier = "calculator-app-rds-final-snapshot-iac2"
   skip_final_snapshot       = false
-}
+  final_snapshot_identifier = "calculator-app-rds-final-snapshot-iac2"
 
 
 
-# Pass the DB_ENDPOINT Variable to the userdata script:
-# Pass the ZONE_ID Variable to the userdata script:
-locals {
-  userdata = templatefile("${path.module}/userdata_for_asg_launch_template.tpl", {
-    db_endpoint = aws_db_instance.mydb.endpoint
-    private_dns_zone_id = aws_route53_zone.private.id
-  })
-}
+
+# -------- RDS Sec_Group Settings --------
+  vpc_id                  = aws_vpc.my_vpc.id
+  private_cidr_block      = "10.0.0.0/24"
+  rds_security_group_name = "RDS_SG_IaC"
+
+
+
+
+
 
 
 
