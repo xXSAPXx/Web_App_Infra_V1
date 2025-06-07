@@ -60,10 +60,12 @@ resource "aws_eip" "nat_eip" {
 
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat_eip.id
-  subnet_id     = var.nat_gateway_public_subnet_id
+  
+  # Use a conditional to choose the subnet based on the variable.
+  # If the variable is 2, use public_subnet_2.id. Otherwise, use public_subnet_1.id.
+  subnet_id = var.nat_gateway_public_subnet_id == 2 ? aws_subnet.public_subnet_2.id : aws_subnet.public_subnet_1.id
   depends_on    = [aws_internet_gateway.igw]
 }
-
 
 
 ##################################################################
@@ -99,7 +101,7 @@ resource "aws_subnet" "private_subnet_2" {
 
 # Create a subnet group for the RDS instance
 resource "aws_db_subnet_group" "mydb_subnet_group" {
-  name       = "mydb_subnet_group"
+  name       = "var.rds_subnet_group_name"
   subnet_ids = [
     aws_subnet.private_subnet_1.id,
     aws_subnet.private_subnet_2.id

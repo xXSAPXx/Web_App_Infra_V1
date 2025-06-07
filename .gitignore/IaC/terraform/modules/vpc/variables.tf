@@ -64,9 +64,14 @@ variable "availability_zone_2" {
 
 
 variable "nat_gateway_public_subnet_id" {
-  description = "The Public Subnet_ID for the NAT_GATEWAY."
-  type        = string
-  default     = "aws_subnet.public_subnet_1.id"
+  description = "The public subnet to place the NAT Gateway in. Must be 1 or 2."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = contains([1, 2], var.nat_gateway_public_subnet_id)
+    error_message = "The NAT Gateway subnet number must be either 1 or 2."
+  }
 }
 
 

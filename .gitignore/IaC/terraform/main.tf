@@ -56,7 +56,7 @@ module "vpc" {
   private_subnet_2_cidr = "10.0.0.48/28"
   
   # --- NAT_Gateway Settings ---
-  nat_gateway_public_subnet_id = "aws_subnet.public_subnet_1.id"
+  nat_gateway_public_subnet_id = 1
 
   # --- RDS Subnet Group Settings ---
   rds_subnet_group_name = "App_DB_Subnet_Group_IaC"
