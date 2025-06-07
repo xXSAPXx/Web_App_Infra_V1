@@ -12,19 +12,6 @@ terraform {
 }
 
 
-# Cloudflare Variables: 
-variable "cloudflare_api_token" {
-  type        = string
-  sensitive   = true
-  description = "Cloudflare API Token"
-}
-
-variable "cloudflare_zone_id" {
-  type        = string
-  description = "Zone ID of the Cloudflare domain"
-}
-
-
 # Create just a Cloudflare DNS record to the ALB CNAME - [SSL cert validation is handled in module alb_cert_validation]
 module "cloudflare_dns" {
   source               = "./modules/cloudflare"
