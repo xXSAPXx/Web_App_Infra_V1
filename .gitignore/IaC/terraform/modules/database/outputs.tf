@@ -9,10 +9,6 @@ output "rds_instance_identifier" {
   value       = aws_db_instance.mydb.id
 }
 
-output "rds_security_group_id" {
-  description = "The ID of the RDS security group"
-  value       = aws_security_group.rds_sg.id
-}
 
 output "rds_subnet_group_name" {
   description = "The DB subnet group name used by the RDS instance"

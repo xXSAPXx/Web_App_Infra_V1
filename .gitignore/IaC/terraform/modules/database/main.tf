@@ -1,30 +1,4 @@
 
-##################################################################
-# Create a security group for the RDS instance:
-##################################################################
-
-resource "aws_security_group" "rds_sg" {
-  vpc_id = var.vpc_id
-
-  ingress {
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-    cidr_blocks = var.private_cidr_block  # (Only inside VPC)
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = var.private_cidr_block # (Only inside VPC)
-  }
-
-  tags = {
-    Name = var.rds_security_group_name
-  }
-}
-
 ################################################################################
 # Create an RDS Instance in the Private Subnet Group (2 private_subnets)
 ################################################################################
@@ -58,7 +32,7 @@ resource "aws_db_instance" "mydb" {
 # Pass the DB_ENDPOINT Variable to the userdata script:
 # Pass the ZONE_ID Variable to the userdata script:
 locals {
-  userdata = templatefile("${path.root}/userdata_for_asg_launch_template.tpl", {
+  userdata = templatefile("${path.root}/modules/asg/userdata_for_asg_launch_template.tpl", {
     db_endpoint         = aws_db_instance.mydb.endpoint
     private_dns_zone_id = var.private_dns_zone_id
   })

@@ -1,30 +1,5 @@
 
 ##############################################
-# VPC and Subnet Configuration for SEC_GROUP:
-##############################################
-variable "vpc_id" {
-  type        = string
-  description = "The ID of the VPC where resources like the security group will be created."
-}
-
-variable "private_cidr_block" {
-  type        = string
-  description = "CIDR block used for ingress and egress inside the VPC."
-  default     = "10.0.0.0/24"
-}
-
-variable "rds_security_group_name" {
-  type        = string
-  description = "Name for the RDS Security Group"
-  default     = "RDS_SG_IaC"
-}
-
-variable "vpc_security_group_ids" {
-  type        = list(string)
-  description = "Sec_group id for the RDS Instance"
-}
-
-##############################################
 # RDS Instance Configuration:
 ##############################################
 variable "rds_instance_class" {

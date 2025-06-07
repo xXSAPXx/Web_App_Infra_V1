@@ -70,6 +70,40 @@ module "vpc" {
 
 
 
+# Create ALL Security Groups: 
+######################################################################################
+
+module "aws_security" {
+  source = "./modules/sec_groups_and_iam"
+
+# For all SGs:
+vpc_id = aws_vpc.my_vpc.id
+
+# -------- RDS Sec_Group Settings --------
+  rds_cidr_block          = "10.0.0.0/24"
+  rds_security_group_name = "RDS_SG_IaC"
+
+# --- Bastion_Prometheus_Host Sec_Group Settings ---
+  bastion_host_cidr_block = "0.0.0.0/0"
+  sec_group_name          = "bastion_prometheus_sg"
+  sec_group_description   = "Allow SSH and Prometheus and Node_Exporter Ports"
+
+# --- ALB Sec_Group Settings ---
+  alb_sec_group_cidr_block = "0.0.0.0/0"          # Public ALB Allows HTTP / HTTPS 
+  alb_security_group_name  = "alb_security_group"
+
+# --- Web_Servers Sec_Group Settings ---     
+  asg_sec_group_cidr_block = "10.0.0.0/24"
+  bastion_host_sec_group   = [aws_security_group.bastion_prometheus_sg.id] # Only the BASTION_Sec_Group can SSH the WEB_SERVERS! 
+  asg_security_group_name  = "asg_servers_sg"
+}
+
+
+
+
+
+
+
 # RDS MySQL Databases: 
 # Create RDS configuration and RDS Sec_Group
 ######################################################################################
@@ -102,60 +136,12 @@ module "database" {
   # Prevent deletion of the database
   skip_final_snapshot       = false
   final_snapshot_identifier = "calculator-app-rds-final-snapshot-iac2"
-
-
-
-
-# -------- RDS Sec_Group Settings --------
-  vpc_id                  = aws_vpc.my_vpc.id
-  private_cidr_block      = "10.0.0.0/24"
-  rds_security_group_name = "RDS_SG_IaC"
-
-
-
-
-
-
-
-
-##################################################################
-# Security Group allowing HTTP/HTTPS for the Public ALB
-##################################################################
-
-resource "aws_security_group" "lb_security_group" {
-  vpc_id = aws_vpc.my_vpc.id
-
-  # Allow incoming HTTP traffic
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow HTTP traffic"
-  }
-
-  # Allow incoming HTTPS traffic
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow HTTPS traffic"
-  }
-
-  # Allow all outbound traffic
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow all outbound traffic (Ensures that the ELB can reach any required service without restrictions!)"
-  }
-
-  tags = {
-    Name = "lb_security_group"
-  }
 }
+
+
+
+
+
 
 
 ########################################################################################################
@@ -300,45 +286,6 @@ module "alb_cert" {
 
 
 
-##################################################################
-# Security Group for the EC2s (Web_Servers)
-##################################################################
-
-resource "aws_security_group" "web_servers_sg" {
-  vpc_id = aws_vpc.my_vpc.id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/24"] # Only inside VPC
-  }
-
-  ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = [aws_security_group.bastion_prometheus_sg.id] # Only the bastion_host can SSH here! 
-  }
-
-  ingress {
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/24"] # Only inside VPC
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "web_servers_sg"
-  }
-}
 
 
 ##################################################################
@@ -474,7 +421,25 @@ resource "aws_autoscaling_policy" "scale_in_policy" {
 
 
 
+ 
+# Create Sec_Group and EC2: (Bastion Prometheus Host)
+######################################################################################
+module "bastion_prometheus" {
+  source          = "./modules/bastion_prometheus_host"
 
-module "bastion_prometheus_host" {
-  source = "./modules/bastion"
+
+  # --- Bastion_Prometheus_Host Settings ---
+  ami_id                  = "ami-0583d8c7a9c35822c"
+  instance_type           = "t2.micro"
+  subnet_id               = aws_subnet.public_subnet_2.id
+  vpc_security_group_ids  = [aws_security_group.bastion_prometheus_sg.id]
+  key_name                = "Test.env"
+  user_data_path          = "${path.module}/userdata_for_bastion_prometheus_host.tpl"
   
+  volume_size = 10
+  volume_type = "gp2"
+  
+  tags = {
+    Name = "Bastion-Prometheus-IaC"
+  }
+}
