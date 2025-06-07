@@ -12,6 +12,19 @@ terraform {
 }
 
 
+# Cloudflare Variables: 
+variable "cloudflare_api_token" {
+  type        = string
+  sensitive   = true
+  description = "Cloudflare API Token"
+}
+
+variable "cloudflare_zone_id" {
+  type        = string
+  description = "Zone ID of the Cloudflare domain"
+}
+
+
 # Create just a Cloudflare DNS record to the ALB CNAME - [SSL cert validation is handled in module alb_cert_validation]
 module "cloudflare_dns" {
   source               = "./modules/cloudflare"
@@ -445,53 +458,25 @@ resource "aws_lb_listener_rule" "backend_api_route" {
   }
 }
 
+
+
+
 ########################################################################################################
-# Create Amazon-issued TLS certificate for our domain: [Specifies DNS validation.] / VALIDATE CERT 
+# Create Amazon-issued TLS certificate for our domain: [Specifies DNS validation.] AND VALIDATE CERT! 
 ########################################################################################################
 
-# This means AWS will provide a DNS CNAME record that you must create (manually or via Terraform) 
-# in your domain's DNS (e.g., Cloudflare, Route 53) to prove ownership before the cert is issued.
-resource "aws_acm_certificate" "alb_cert" {
-  domain_name       = "xxsapxx.uk"
-  subject_alternative_names = ["www.xxsapxx.uk"] # Added the www subdomain here
-  validation_method = "DNS"
-
-  tags = {
-    Environment = "prod"
-  }
-  
-  lifecycle {
-    create_before_destroy = true
-  }
-}
+module "alb_cert" {
+  source = "./modules/alb_ssl_cert_validation"
+  domain_name         = "xxsapxx.uk"
+  san                 = ["www.xxsapxx.uk"]
+  cloudflare_zone_id  = var.cloudflare_zone_id
 
 
-# Create DNS validation record in Cloudflare:
-resource "cloudflare_dns_record" "cert_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.alb_cert.domain_validation_options : dvo.domain_name => {
-      name  = dvo.resource_record_name
-      type  = dvo.resource_record_type
-      value = dvo.resource_record_value
-    }
-  }
-  zone_id = var.cloudflare_zone_id
-  name    = each.value.name
-  type    = each.value.type
-  content = each.value.value
-  ttl     = 60
-  proxied = false                   # IMPORTANT: Validation records MUST NOT be proxied by Cloudflare
-}
 
 
-# Wait for the certificate to be validated and issued:
-resource "aws_acm_certificate_validation" "cert_validation" {
-  certificate_arn = aws_acm_certificate.alb_cert.arn
 
-  validation_record_fqdns = [
-    for record in cloudflare_dns_record.cert_validation : record.name
-  ]
-}
+
+
 
 
 

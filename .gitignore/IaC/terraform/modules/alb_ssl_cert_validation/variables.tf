@@ -1,0 +1,16 @@
+
+
+variable "domain_name" {
+  type        = string
+  description = "The main domain to request a cert for"
+}
+
+variable "san" {
+  type        = list(string)
+  description = "Subject Alternative Names (e.g., www domain)"
+}
+
+variable "cloudflare_zone_id" {
+  type        = string
+  description = "Zone ID for the Cloudflare domain"
+}
