@@ -27,6 +27,8 @@ module "cloudflare_dns" {
 }
 
 
+
+
 ###################################################################################################################
 ############ AWS PROVIDER ################################## AWS PROVIDER #########################################
 
@@ -67,6 +69,7 @@ module "vpc" {
   # --- Route 53 Settings ---
   private_zone_name = "internal.xxsapxx.local"
 }
+
 
 
 
@@ -233,6 +236,7 @@ module "alb" {
   # ALB Rules for HTTPS Listener: 
   # List of path patterns to forward to the backend_tg
   backend_path_patterns = ["/api/*"]
+}
 
 
 
@@ -245,79 +249,48 @@ module "alb_cert" {
   san                 = ["www.xxsapxx.uk"]
   cloudflare_zone_id  = var.cloudflare_zone_id
   validation_method   = "DNS"
-
-
-
-
-
-
-
-
-
-
-
-##################################################################
-# Launch Template For Every EC2 Instance: 
-##################################################################
-
-resource "aws_launch_template" "web_server_template" {
-  name_prefix   = "web-server-template"
-  image_id      = "ami-0583d8c7a9c35822c"
-  instance_type = "t2.micro"
-  key_name      = "Test.env"
-
-  user_data = base64encode(local.userdata)
-
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs {
-      volume_size = 10
-      volume_type = "gp2"
-    }
-  }
-
-  network_interfaces {
-    security_groups = [aws_security_group.web_servers_sg.id]
-  }
-
-  # Ensure the launch configuration is created only after the RDS instance
-  depends_on = [aws_db_instance.mydb]
 }
 
 
-##################################################################
-# AUTO SCALING GROUP CREATION
-##################################################################
 
-resource "aws_autoscaling_group" "web_server_asg" {
-  launch_template {
-    id      = aws_launch_template.web_server_template.id
-    version = "$Latest"
-  }
+# Create Lunch Template and the ASG:  
+########################################################################################################
+module "asg_creation" {
+  source = "./modules/asg"
+  depends_on = [module.database] # Ensure the launch configuration is created only after the RDS Module.
 
-  min_size             = 1
-  max_size             = 3
-  desired_capacity     = 1
-  vpc_zone_identifier  = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]  # Deploy EC2s in both private subnets
 
-  # This ALB acts like a FRONTEND and BACKEND at the same time so we add both ALB target groups here: 
-  target_group_arns = [
-  aws_lb_target_group.frontend_tg.arn,
-  aws_lb_target_group.backend_tg.arn
-  ]
+# --- Launch Template Settings ---
+  launch_template_name_prefix     = "web-server-template"
+  launch_template_image_id        = "ami-0583d8c7a9c35822c"
+  launch_template_instance_type   = "t2.micro"
+  launch_template_key_name        = "Test.env"
+  launch_template_user_data       = "${path.module}/userdata_for_asg_launch_template.tpl"
 
-  tag {
-    key                 = "Name"
-    value               = "Web-Server-IaC"
-    propagate_at_launch = true
-  }
+# EBS: 
+  launch_template_device_name     = "/dev/xvda"
+  launch_template_volume_size     = 10
+  launch_template_volume_type     = "gp2"
 
-  health_check_type    = "ELB"  # ALB/ELB compatibility
+  launch_template_security_groups = [aws_security_group.web_servers_sg.id]
 
-  health_check_grace_period = 300  # 5 minutes grace period for the instances to finish boot
 
-  depends_on = [aws_launch_template.web_server_template]  # Ensure template is created before ASG
+# --- ASG Configuration Settings ---
+  asg_min_size                    = 1
+  asg_max_size                    = 3
+  asg_desired_capacity            = 1
+  asg_vpc_zone_identifier         = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]
+  asg_target_group_arns           = [aws_lb_target_group.frontend_tg.arn, aws_lb_target_group.backend_tg.arn]
+  asg_health_check_type           = "ELB" 
+  asg_health_check_grace_period   = 300
+  asg_tag_name                    = "Web-Server-IaC"
+  asg_propagate_name_at_launch    = true
 }
+
+
+
+
+
 
 
 
