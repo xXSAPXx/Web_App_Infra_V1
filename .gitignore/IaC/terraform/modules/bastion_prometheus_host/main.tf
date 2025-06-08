@@ -16,5 +16,8 @@ resource "aws_instance" "bastion_prometheus" {
     volume_type = var.volume_type
   }
 
-  tags = var.tags
+  tags = {
+  Name = var.bastion_host_tag_name
+  }
+
 }

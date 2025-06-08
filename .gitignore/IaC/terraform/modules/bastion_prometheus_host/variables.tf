@@ -46,7 +46,7 @@ variable "volume_type" {
   default     = "gp2"
 }
 
-variable "tags" {
+variable "bastion_host_tag_name" {
   description = "Tags to apply to the EC2 instance"
   type        = map(string)
   default     = {

@@ -154,15 +154,13 @@ module "bastion_prometheus" {
   volume_size = 10
   volume_type = "gp2"
   
-  tags = {
-    Name = "Bastion-Prometheus-IaC"
-  }
+  bastion_host_tag_name   = "Bastion-Prometheus-IaC"
 }
 
 
 
 
-# Create Frontend/Backend - Target Groups / ALB / ALB_Listeners / 
+# Create Frontend/Backend - Target Groups / ALB / ALB_Listeners / ALB Rules 
 ######################################################################################
 module "alb" {
   source = "./modules/alb"
@@ -203,10 +201,9 @@ module "alb" {
   backend_tg_tag_name  = "BackendTargetGroup"
 
 
-
-# --- ALB Configuration Settings ---
-  alb_name                       = "my-alb"
-  alb_vpc_id                     = "vpc-abcde012"
+# ----------- ALB Configuration Settings -----------
+  alb_name                       = "alb-web-servers-asg"
+  alb_vpc_id                     = aws_vpc.my_vpc.id
   alb_subnets                    = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]   # We need 2 Subnets for the ALB to work
   alb_security_groups            = [aws_security_group.lb_security_group.id]
   alb_load_balancer_type         = "application"
@@ -216,10 +213,26 @@ module "alb" {
   alb_tag_name                   = "asg-web-servers-alb"
 
 
+# ----------- ALB Listeners Configuration Settings -----------
+  
+  # HTTP Listener: 
+  # Forwards All Taffic on port 80 to HTTPS(443) --> aws_lb_target_group.frontend_tg.arn
+  http_listener_port                  = 80  
+  # Redirect to HTTPS: 
+  http_listener_redirect_protocol     = "HTTPS"
+  http_listener_redirect_port         = "443"
+  http_listener_redirect_status_code  = "HTTP_301"
+  
 
+  # HTTPS Listener: 
+  # Forwards All Taffic on port 443 to --> aws_lb_target_group.frontend_tg.arn
+  https_listener_port                 = 443
+  https_listener_ssl_policy           = "ELBSecurityPolicy-2016-08"
+  https_listener_certificate_arn      = aws_acm_certificate.alb_cert.arn
 
-
-
+  # ALB Rules for HTTPS Listener: 
+  # List of path patterns to forward to the backend_tg
+  backend_path_patterns = ["/api/*"]
 
 
 
@@ -301,7 +314,6 @@ resource "aws_autoscaling_group" "web_server_asg" {
 
   health_check_type    = "ELB"  # ALB/ELB compatibility
 
-  # Optionally add health check grace period to allow user data script to run
   health_check_grace_period = 300  # 5 minutes grace period for the instances to finish boot
 
   depends_on = [aws_launch_template.web_server_template]  # Ensure template is created before ASG

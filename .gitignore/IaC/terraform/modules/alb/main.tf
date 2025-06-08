@@ -55,6 +55,7 @@ resource "aws_lb_target_group" "backend_tg" {
 # Define the Application Load Balancer
 resource "aws_lb" "web_alb" {
   name               = var.alb_name
+  vpc_id             = var.alb_vpc_id
   internal           = var.alb_internal
   load_balancer_type = var.alb_load_balancer_type
   security_groups    = [var.alb_security_groups]
@@ -72,7 +73,7 @@ resource "aws_lb" "web_alb" {
 # Define ALB HTTP Listener to be Redirected from HTTP:80 to HTTPS:443
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.web_alb.arn
-  port              = 80
+  port              = var.http_listener_port
   protocol          = "HTTP"
 
   default_action {
@@ -80,9 +81,9 @@ resource "aws_lb_listener" "http" {
     target_group_arn = aws_lb_target_group.frontend_tg.arn
 
     redirect {
-      protocol    = "HTTPS"
-      port        = "443"
-      status_code = "HTTP_301"
+      protocol    = var.http_listener_redirect_protocol
+      port        = var.http_listener_redirect_port
+      status_code = var.http_listener_redirect_status_code
     }
 
   }
@@ -92,10 +93,10 @@ resource "aws_lb_listener" "http" {
 # Forward if path is `/` or `/*.html` or similar → frontend-tg
 resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.web_alb.arn
-  port              = 443
+  port              = var.https_listener_port
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate.alb_cert.arn
+  ssl_policy        = var.https_listener_ssl_policy
+  certificate_arn   = var.https_listener_certificate_arn
 
   default_action {
     type             = "forward"
@@ -115,7 +116,7 @@ resource "aws_lb_listener_rule" "backend_api_route" {
 
   condition {
     path_pattern {
-      values = ["/api/*"]
+      values = [var.backend_path_patterns]
     }
   }
 }
