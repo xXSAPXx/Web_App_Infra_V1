@@ -7,11 +7,13 @@ variable "launch_template_name_prefix" {
 variable "launch_template_image_id" {
   description = "AMI ID for EC2 instances"
   type        = string
+  default     = "ami-0583d8c7a9c35822c"
 }
 
 variable "launch_template_instance_type" {
   description = "Instance type for EC2"
   type        = string
+  default     = "t2.micro"
 }
 
 variable "launch_template_key_name" {
@@ -32,11 +34,13 @@ variable "launch_template_device_name" {
 variable "launch_template_volume_size" {
   description = "Root EBS volume size (in GB)"
   type        = number
+  default     = 10
 }
 
 variable "launch_template_volume_type" {
   description = "EBS volume type (e.g. gp2, gp3)"
   type        = string
+  default     = "gp2"
 }
 
 variable "launch_template_security_groups" {
