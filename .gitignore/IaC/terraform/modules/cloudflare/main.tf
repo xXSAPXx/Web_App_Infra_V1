@@ -1,6 +1,14 @@
-# Cloudflare Provider: 
-provider "cloudflare" {
-  api_token = var.cloudflare_api_token
+
+# Required Module Providers: 
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+    }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+    }
+ }
 }
 
 

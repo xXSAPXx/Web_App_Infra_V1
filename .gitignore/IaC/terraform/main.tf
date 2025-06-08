@@ -1,25 +1,30 @@
 
 
-
-# Cloudflare and AWS Providers: 
+# Required Providers: 
 terraform {
-  required_providers {
-    
-    cloudflare = {
-      source  = "cloudflare/cloudflare"
-      version = "~> 4.0"
-    }
+  required_version = ">= 1.10.0"
 
+  required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
-  }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 4.0"
+    }
+ }
 }
 
 
-################################################################################################################################
-######################################## CLOUDFLARE MODULES ####################################################################
+#################################################################################################################################
+######################################## CLOUDFLARE PROVIDER VARIABLES ##########################################################
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
+}
+
+
 
 # Create a Cloudflare DNS record to the ALB CNAME or IP - [SSL cert validation is handled in module alb_cert_validation]
 module "cloudflare_dns" {
@@ -41,8 +46,8 @@ module "cloudflare_dns" {
 
 
 
-#########################################################################################################################
-######################################## AWS MODULES ####################################################################
+####################################################################################################################################
+######################################## AWS PROVIDER VARIABLES ####################################################################
 
 # AWS provider region: 
 provider "aws" {
