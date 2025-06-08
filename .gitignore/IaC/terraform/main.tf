@@ -15,6 +15,8 @@ terraform {
 # Create a Cloudflare DNS record to the ALB CNAME or IP - [SSL cert validation is handled in module alb_cert_validation]
 module "cloudflare_dns" {
   source               = "./modules/cloudflare"
+
+# --- Cloudflare_DNS_Record Settings ---
   cloudflare_api_token = var.cloudflare_api_token
   cloudflare_zone_id   = var.cloudflare_zone_id
   select_domain_name   = "xxsapxx.uk"
@@ -288,77 +290,50 @@ module "asg_creation" {
 }
 
 
+# Create Scaling Policies for the ASG based on Cloud_Watch Metrics:  
+########################################################################################################
+
+module "cloud_watch_alarm_and_scale_policies" {
+  source = "./modules/asg_scaling_policies"
+
+# CPU above 70% Cloud_Watch Alarm Settings ---
+cpu_above_70_alarm_alarm_name             = "cpu_alarm_high"
+cpu_above_70_alarm_comparison_operator    = "GreaterThanThreshold"
+cpu_above_70_alarm_evaluation_periods     = "2"
+cpu_above_70_alarm_metric_name            = "CPUUtilization"
+cpu_above_70_alarm_namespace              = "AWS/EC2"
+cpu_above_70_alarm_period                 = "120"
+cpu_above_70_alarm_statistic              = "Average"
+cpu_above_70_alarm_threshold              = "70"
+cpu_above_70_alarm_alarm_description      = "This metric monitors the average CPU utilization and triggers if it goes above 70%."
+cpu_above_70_alarm_actions_enabled        = true
+cpu_above_70_alarm_autoscaling_group_name = aws_autoscaling_group.web_server_asg.name
+
+# --- Scale out policy triggered by CPU above 70% Cloud_Watch Alarm ---
+scale_out_policy_name                     = "scale_out_policy"
+scale_out_policy_scaling_adjustment       = 1
+scale_out_policy_adjustment_type          = "ChangeInCapacity"
+scale_out_policy_cooldown                 = 120
+scale_out_policy_autoscaling_group_name   = aws_autoscaling_group.web_server_asg.id
 
 
+# CPU below 50% Cloud_Watch Alarm Settings ---
+cpu_below_50_alarm_alarm_name             = "cpu_alarm_low"
+cpu_below_50_alarm_comparison_operator    = "LessThanThreshold"
+cpu_below_50_alarm_evaluation_periods     = "2"
+cpu_below_50_alarm_metric_name            = "CPUUtilization"
+cpu_below_50_alarm_namespace              = "AWS/EC2"
+cpu_below_50_alarm_period                 = "120"
+cpu_below_50_alarm_statistic              = "Average"
+cpu_below_50_alarm_threshold              = "50"
+cpu_below_50_alarm_alarm_description      = "This metric monitors the average CPU utilization and triggers if it goes below 50%."
+cpu_below_50_alarm_actions_enabled        = true
+cpu_below_50_alarm_autoscaling_group_name = aws_autoscaling_group.web_server_asg.name
 
 
-
-
-##################################################################
-# CLOUDWATCH ALARM AND SCALING OUT POLICY (CPU above 70% ALARM)
-##################################################################
-
-# Define a CloudWatch Alarm for CPU Utilization Above 70%
-resource "aws_cloudwatch_metric_alarm" "cpu_alarm_high" {
-  alarm_name          = "cpu_alarm_high"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "2"
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = "120"
-  statistic           = "Average"
-  threshold           = "70"
-  alarm_description   = "This metric monitors the average CPU utilization and triggers if it goes above 70%."
-  actions_enabled     = true
-  alarm_actions       = [aws_autoscaling_policy.scale_out_policy.arn]
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.web_server_asg.name
-  }
-}
-
-# Define the Scaling Policy for Scaling Out
-resource "aws_autoscaling_policy" "scale_out_policy" {
-  name                   = "scale_out_policy"
-  scaling_adjustment     = 1
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = 120
-  autoscaling_group_name = aws_autoscaling_group.web_server_asg.id
-}
-
-
-##################################################################
-# CLOUDWATCH ALARM AND SCALING IN POLICY (CPU below 50% ALARM)
-##################################################################
-
-# Define a CloudWatch Alarm for CPU Utilization Below 50%
-resource "aws_cloudwatch_metric_alarm" "cpu_alarm_low" {
-  alarm_name          = "cpu_alarm_low"
-  comparison_operator = "LessThanThreshold"
-  evaluation_periods  = "2"
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = "120"
-  statistic           = "Average"
-  threshold           = "50"
-  alarm_description   = "This metric monitors the average CPU utilization and triggers if it goes below 50%."
-  actions_enabled     = true
-  alarm_actions       = [aws_autoscaling_policy.scale_in_policy.arn]
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.web_server_asg.name
-  }
-}
-
-
-
-# Define the Scaling Policy for Scaling In
-resource "aws_autoscaling_policy" "scale_in_policy" {
-  name                   = "scale_in_policy"
-  scaling_adjustment     = -1
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = 120
-  autoscaling_group_name = aws_autoscaling_group.web_server_asg.id
-}
-
-
-
-
+# --- Scale out policy triggered by CPU below 50% Cloud_Watch Alarm ---
+scale_in_policy_name                      = "scale_in_policy"
+scale_in_policy_scaling_adjustment        = -1
+scale_in_policy_adjustment_type           = "ChangeInCapacity"
+scale_in_policy_cooldown                  = 120
+scale_in_policy_autoscaling_group_name    = aws_autoscaling_group.web_server_asg.id

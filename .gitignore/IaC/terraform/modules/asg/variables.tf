@@ -1,4 +1,4 @@
-# Launch Template Variables
+#################### Launch Template Variables ###################
 variable "launch_template_name_prefix" {
   description = "Prefix for the launch template name"
   type        = string
@@ -48,7 +48,8 @@ variable "launch_template_security_groups" {
   type        = list(string)
 }
 
-# Auto Scaling Group Variables
+
+################### Auto Scaling Group Variables ###################
 variable "asg_min_size" {
   description = "Minimum number of instances in ASG"
   type        = number
