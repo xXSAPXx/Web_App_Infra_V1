@@ -6,43 +6,43 @@
 
 # Frontend Target Group Creation: (httpd service)
 resource "aws_lb_target_group" "frontend_tg" {
-  name     = "frontend-tg"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.my_vpc.id
+  name     = var.frontend_tg_name
+  port     = var.frontend_tg_port
+  protocol = var.frontend_tg_protocol
+  vpc_id   = var.vpc_id
   
   health_check {
-    path                = "/"  # Path to your health_check.html file OR "/" FOR GENERIC ROOT_PATH HEALTH_CHECK
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    matcher             = "200"
+    path                = var.frontend_tg_path         # Path to your health_check.html file OR "/" FOR GENERIC ROOT_PATH HEALTH_CHECK
+    interval            = var.frontend_tg_interval
+    timeout             = var.frontend_tg_timeout
+    healthy_threshold   = var.frontend_tg_healthy_threshold
+    unhealthy_threshold = var.frontend_tg_unhealthy_threshold
+    matcher             = var.frontend_tg_matcher
   }
 
     tags = {
-    Name = "FrontendTargetGroup"
+    Name = var.frontend_tg_tag_name
   }
 }
 
 
 # Backend Target Group Creation: (Node.js)
 resource "aws_lb_target_group" "backend_tg" {
-  name     = "backend-tg"
-  port     = 3000
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.my_vpc.id
+  name     = var.backend_tg_name
+  port     = var.backend_tg_port
+  protocol = var.backend_tg_protocol
+  vpc_id   = var.vpc_id
 
   health_check {
-  path                = "/health" # Backend Server Endpoint Health Check defined in server.js:
-  interval            = 30
-  timeout             = 5
-  healthy_threshold   = 2
-  unhealthy_threshold = 2
-  matcher             = "200"
+  path                = var.backend_tg_path       # Backend Server Endpoint Health Check defined in server.js:
+  interval            = var.backend_tg_interval
+  timeout             = var.backend_tg_timeout
+  healthy_threshold   = var.backend_tg_healthy_threshold
+  unhealthy_threshold = var.backend_tg_unhealthy_threshold
+  matcher             = var.backend_tg_matcher
 }
     tags = {
-    Name = "BackendTargetGroup"
+    Name = var.backend_tg_tag_name
   }
 }
 
@@ -54,19 +54,20 @@ resource "aws_lb_target_group" "backend_tg" {
 
 # Define the Application Load Balancer
 resource "aws_lb" "web_alb" {
-  name               = "Application-Load-Balancer"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.lb_security_group.id]
-  subnets            = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]   # We need 2 Subnets for the ALB to work
+  name               = var.alb_name
+  internal           = var.alb_internal
+  load_balancer_type = var.alb_load_balancer_type
+  security_groups    = [var.alb_security_groups]
+  subnets            = [var.alb_subnets]          # We need 2 Subnets for the ALB to work
   
-  
-  enable_deletion_protection = false
+
+  enable_deletion_protection = var.alb_enable_deletion_protection
 
   tags = {
-    Name = "asg-web-servers-alb"
+    Name = var.alb_tag_name
   }
 }
+
 
 # Define ALB HTTP Listener to be Redirected from HTTP:80 to HTTPS:443
 resource "aws_lb_listener" "http" {

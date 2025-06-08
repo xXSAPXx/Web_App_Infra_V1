@@ -161,46 +161,60 @@ module "bastion_prometheus" {
 
 
 
+
+# Create Frontend/Backend - Target Groups / ALB / ALB_Listeners / 
+######################################################################################
 module "alb" {
   source = "./modules/alb"
 
 
 # --- Target Groups Settings (Frontend / Backend) ---
-    vpc_id = 
+  vpc_id = aws_vpc.my_vpc.id
 
-# --- Frontend TG ---
-    frontend_
-    frontend_
-    frontend_
-    frontend_
-    frontend_
-    frontend_
-    frontend_
+# ----------- Frontend TG -----------
+  frontend_tg_name     = "frontend-tg"
+  frontend_tg_port     = 80
+  frontend_tg_protocol = "HTTP"
+    
+  # Health_Check:
+  frontend_tg_path                = "/"   # Path to your health_check.html file OR "/" FOR GENERIC ROOT_PATH HEALTH_CHECK
+  frontend_tg_interval            = 30
+  frontend_tg_timeout             = 5
+  frontend_tg_healthy_threshold   = 2
+  frontend_tg_unhealthy_threshold = 2
+  frontend_tg_matcher             = "200"
 
-# --- Backend TG --- 
-    backend_
-    backend_
-    backend_
-    backend_
-    backend_
-    backend_
-    backend_
+  frontend_tg_tag_name = "FrontendTargetGroup"
 
+
+# ----------- Backend TG ----------- 
+  backend_tg_name      = "backend-tg"
+  backend_tg_port      = 3000
+  backend_tg_protocol  = "HTTP"
+    
+  # Health_Check:
+  backend_tg_path                 = "/health"
+  backend_tg_interval             = 30
+  backend_tg_timeout              = 5
+  backend_tg_healthy_threshold    = 2
+  backend_tg_unhealthy_threshold  = 2
+  backend_tg_matcher              = "200"
+
+  backend_tg_tag_name  = "BackendTargetGroup"
 
 
 
 # --- ALB Configuration Settings ---
-  name                       = "my-alb"
-  vpc_id                     = "vpc-abcde012"
-  subnets                    = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]   # We need 2 Subnets for the ALB to work
-  security_groups            = [aws_security_group.lb_security_group.id]
-  load_balancer_type         = "application"
-  internal                   = false
-  enable_deletion_protection = false
+  alb_name                       = "my-alb"
+  alb_vpc_id                     = "vpc-abcde012"
+  alb_subnets                    = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]   # We need 2 Subnets for the ALB to work
+  alb_security_groups            = [aws_security_group.lb_security_group.id]
+  alb_load_balancer_type         = "application"
+  alb_internal                   = false
+  alb_enable_deletion_protection = false
 
-  tags = {
-    Name = "asg-web-servers-alb"
-  }
+  alb_tag_name                   = "asg-web-servers-alb"
+
 
 
 
