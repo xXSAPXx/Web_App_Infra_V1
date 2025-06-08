@@ -58,8 +58,8 @@ resource "aws_lb" "web_alb" {
   vpc_id             = var.alb_vpc_id
   internal           = var.alb_internal
   load_balancer_type = var.alb_load_balancer_type
-  security_groups    = [var.alb_security_groups]
-  subnets            = [var.alb_subnets]          # We need 2 Subnets for the ALB to work
+  security_groups    = var.alb_security_groups
+  subnets            = var.alb_subnets            # We need 2 Subnets for the ALB to work
   
 
   enable_deletion_protection = var.alb_enable_deletion_protection
@@ -77,8 +77,7 @@ resource "aws_lb_listener" "http" {
   protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.frontend_tg.arn
+    type = "redirect"
 
     redirect {
       protocol    = var.http_listener_redirect_protocol
@@ -116,7 +115,7 @@ resource "aws_lb_listener_rule" "backend_api_route" {
 
   condition {
     path_pattern {
-      values = [var.backend_path_patterns]
+      values = var.backend_path_patterns
     }
   }
 }
