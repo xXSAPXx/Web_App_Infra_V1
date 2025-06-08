@@ -49,6 +49,7 @@ provider "aws" {
   region = "us-east-1"  # Or use a variable if you prefer
 }
 
+
 # Networking: 
 # Crate VPC / Subnets / Nat_Gateway / RDS_Subnet_Group /Routing / Route53_Private_Zone
 ######################################################################################
