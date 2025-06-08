@@ -14,7 +14,7 @@ terraform {
 
 # Create a Cloudflare DNS record to the ALB CNAME or IP - [SSL cert validation is handled in module alb_cert_validation]
 module "cloudflare_dns" {
-  source               = "./modules/cloudflare"
+  source = "./modules/cloudflare"
 
 # --- Cloudflare_DNS_Record Settings ---
   cloudflare_api_token = var.cloudflare_api_token
@@ -25,7 +25,7 @@ module "cloudflare_dns" {
   dns_record_type      = "CNAME" 
   dns_ttl              = 1
   proxied              = true 
-  alb_dns_name         = aws_lb.web_alb.dns_name
+  alb_dns_name         = module.alb.alb_dns_name
 }
 
 
@@ -82,7 +82,7 @@ module "aws_security" {
   source = "./modules/sec_groups_and_iam"
 
 # For all SGs:
-vpc_id = aws_vpc.my_vpc.id
+vpc_id = module.vpc.vpc_id
 
 # -------- RDS Sec_Group Settings --------
   rds_cidr_block          = "10.0.0.0/24"
@@ -94,12 +94,12 @@ vpc_id = aws_vpc.my_vpc.id
   sec_group_description   = "Allow SSH and Prometheus and Node_Exporter Ports"
 
 # --- ALB Sec_Group Settings ---
-  alb_sec_group_cidr_block = "0.0.0.0/0"          # Public ALB Allows HTTP / HTTPS 
+  alb_sec_group_cidr_block = "0.0.0.0/0"                                                # Public ALB Allows HTTP / HTTPS 
   alb_security_group_name  = "alb_security_group"
 
 # --- Web_Servers Sec_Group Settings ---     
   asg_sec_group_cidr_block = "10.0.0.0/24"
-  bastion_host_sec_group   = [aws_security_group.bastion_prometheus_sg.id] # Only the BASTION_Sec_Group can SSH the WEB_SERVERS! 
+  bastion_host_sec_group   = [module.sec_groups_and_iam.bastion_host_security_group_id] # Only the BASTION_Sec_Group can SSH the WEB_SERVERS! 
   asg_security_group_name  = "asg_servers_sg"
 }
 
@@ -128,8 +128,8 @@ module "database" {
   parameter_group_name = "default.mysql8.0"
   publicly_accessible  = false
   
-  rds_security_group_ids = [aws_security_group.rds_sg.id]
-  rds_subnet_group_name  = aws_db_subnet_group.mydb_subnet_group.name
+  rds_security_group_ids = [module.sec_groups_and_iam.rds_security_group_id]
+  rds_subnet_group_name  = module.vpc.db_subnet_group_name
 
   snapshot_identifier  = "calculator-app-rds-final-snapshot-iac"  # Replace with your snapshot ID from which you want the DB to be created 
   maintenance_window   = "mon:19:00-mon:19:30"
@@ -142,17 +142,17 @@ module "database" {
 
 
 
-# Create and EC2: (Bastion Prometheus Host)
+# Create and EC2: (Bastion / Prometheus Host)
 ######################################################################################
 module "bastion_prometheus" {
-  source          = "./modules/bastion_prometheus_host"
+  source = "./modules/bastion_prometheus_host"
 
 
   # --- Bastion_Prometheus_Host Settings ---
   ami_id                  = "ami-0583d8c7a9c35822c"
   instance_type           = "t2.micro"
-  subnet_id               = aws_subnet.public_subnet_2.id
-  bastion_sec_group_ids   = [aws_security_group.bastion_prometheus_sg.id]
+  subnet_id               = module.vpc.public_subnet_2_id
+  bastion_sec_group_ids   = [module.sec_groups_and_iam.bastion_host_security_group_id]
   key_name                = "Test.env"
   user_data_path          = "${path.module}/userdata_for_bastion_prometheus_host.tpl"
   
@@ -172,7 +172,7 @@ module "alb" {
 
 
 # --- Target Groups Settings (Frontend / Backend) ---
-  vpc_id = aws_vpc.my_vpc.id
+  vpc_id = module.vpc.vpc_id
 
 # ----------- Frontend TG -----------
   frontend_tg_name     = "frontend-tg"
@@ -208,9 +208,9 @@ module "alb" {
 
 # ----------- ALB Configuration Settings -----------
   alb_name                       = "alb-web-servers-asg"
-  alb_vpc_id                     = aws_vpc.my_vpc.id
-  alb_subnets                    = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]   # We need 2 Subnets for the ALB to work
-  alb_security_groups            = [aws_security_group.lb_security_group.id]
+  alb_vpc_id                     = module.vpc.vpc_id
+  alb_subnets                    = [module.vpc.public_subnet_1_id, module.vpc.public_subnet_2_id]   # We need 2 Subnets for the ALB to work
+  alb_security_groups            = [module.sec_groups_and_iam.alb_security_group_id]
   alb_load_balancer_type         = "application"
   alb_internal                   = false
   alb_enable_deletion_protection = false
@@ -233,7 +233,7 @@ module "alb" {
   # Forwards All Taffic on port 443 to --> aws_lb_target_group.frontend_tg.arn
   https_listener_port                 = 443
   https_listener_ssl_policy           = "ELBSecurityPolicy-2016-08"
-  https_listener_certificate_arn      = aws_acm_certificate.alb_cert.arn
+  https_listener_certificate_arn      = module.alb_ssl_cert_validation.alb_certificate_arn
 
   # ALB Rules for HTTPS Listener: 
   # List of path patterns to forward to the backend_tg
@@ -274,15 +274,15 @@ module "asg_creation" {
   launch_template_volume_size     = 10
   launch_template_volume_type     = "gp2"
 
-  launch_template_security_groups = [aws_security_group.web_servers_sg.id]
+  launch_template_security_groups = [module.sec_groups_and_iam.asg_security_group_id]
 
 
 # --- ASG Configuration Settings ---
   asg_min_size                    = 1
   asg_max_size                    = 3
   asg_desired_capacity            = 1
-  asg_vpc_zone_identifier         = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]
-  asg_target_group_arns           = [aws_lb_target_group.frontend_tg.arn, aws_lb_target_group.backend_tg.arn]
+  asg_vpc_zone_identifier         = [module.vpc.private_subnet_1_id, module.vpc.private_subnet_2_id]
+  asg_target_group_arns           = [module.alb.frontend_target_group_arn, module.alb.backend_target_group_arn]
   asg_health_check_type           = "ELB" 
   asg_health_check_grace_period   = 300
   asg_tag_name                    = "Web-Server-IaC"
@@ -296,44 +296,45 @@ module "asg_creation" {
 module "cloud_watch_alarm_and_scale_policies" {
   source = "./modules/asg_scaling_policies"
 
-# CPU above 70% Cloud_Watch Alarm Settings ---
-cpu_above_70_alarm_alarm_name             = "cpu_alarm_high"
-cpu_above_70_alarm_comparison_operator    = "GreaterThanThreshold"
-cpu_above_70_alarm_evaluation_periods     = "2"
-cpu_above_70_alarm_metric_name            = "CPUUtilization"
-cpu_above_70_alarm_namespace              = "AWS/EC2"
-cpu_above_70_alarm_period                 = "120"
-cpu_above_70_alarm_statistic              = "Average"
-cpu_above_70_alarm_threshold              = "70"
-cpu_above_70_alarm_alarm_description      = "This metric monitors the average CPU utilization and triggers if it goes above 70%."
-cpu_above_70_alarm_actions_enabled        = true
-cpu_above_70_alarm_autoscaling_group_name = aws_autoscaling_group.web_server_asg.name
+# --- CPU above 70% Cloud_Watch Alarm Settings ---
+  cpu_above_70_alarm_alarm_name             = "cpu_alarm_high"
+  cpu_above_70_alarm_comparison_operator    = "GreaterThanThreshold"
+  cpu_above_70_alarm_evaluation_periods     = "2"
+  cpu_above_70_alarm_metric_name            = "CPUUtilization"
+  cpu_above_70_alarm_namespace              = "AWS/EC2"
+  cpu_above_70_alarm_period                 = "120"
+  cpu_above_70_alarm_statistic              = "Average"
+  cpu_above_70_alarm_threshold              = "70"
+  cpu_above_70_alarm_alarm_description      = "This metric monitors the average CPU utilization and triggers if it goes above 70%."
+  cpu_above_70_alarm_actions_enabled        = true
+  cpu_above_70_alarm_autoscaling_group_name = module.asg.autoscaling_group_name
 
 # --- Scale out policy triggered by CPU above 70% Cloud_Watch Alarm ---
-scale_out_policy_name                     = "scale_out_policy"
-scale_out_policy_scaling_adjustment       = 1
-scale_out_policy_adjustment_type          = "ChangeInCapacity"
-scale_out_policy_cooldown                 = 120
-scale_out_policy_autoscaling_group_name   = aws_autoscaling_group.web_server_asg.id
+  scale_out_policy_name                     = "scale_out_policy"
+  scale_out_policy_scaling_adjustment       = 1
+  scale_out_policy_adjustment_type          = "ChangeInCapacity"
+  scale_out_policy_cooldown                 = 120
+  scale_out_policy_autoscaling_group_name   = module.asg.autoscaling_group_id
 
 
-# CPU below 50% Cloud_Watch Alarm Settings ---
-cpu_below_50_alarm_alarm_name             = "cpu_alarm_low"
-cpu_below_50_alarm_comparison_operator    = "LessThanThreshold"
-cpu_below_50_alarm_evaluation_periods     = "2"
-cpu_below_50_alarm_metric_name            = "CPUUtilization"
-cpu_below_50_alarm_namespace              = "AWS/EC2"
-cpu_below_50_alarm_period                 = "120"
-cpu_below_50_alarm_statistic              = "Average"
-cpu_below_50_alarm_threshold              = "50"
-cpu_below_50_alarm_alarm_description      = "This metric monitors the average CPU utilization and triggers if it goes below 50%."
-cpu_below_50_alarm_actions_enabled        = true
-cpu_below_50_alarm_autoscaling_group_name = aws_autoscaling_group.web_server_asg.name
 
+# --- CPU below 50% Cloud_Watch Alarm Settings ---
+  cpu_below_50_alarm_alarm_name             = "cpu_alarm_low"
+  cpu_below_50_alarm_comparison_operator    = "LessThanThreshold"
+  cpu_below_50_alarm_evaluation_periods     = "2"
+  cpu_below_50_alarm_metric_name            = "CPUUtilization"
+  cpu_below_50_alarm_namespace              = "AWS/EC2"
+  cpu_below_50_alarm_period                 = "120"
+  cpu_below_50_alarm_statistic              = "Average"
+  cpu_below_50_alarm_threshold              = "50"
+  cpu_below_50_alarm_alarm_description      = "This metric monitors the average CPU utilization and triggers if it goes below 50%."
+  cpu_below_50_alarm_actions_enabled        = true
+  cpu_below_50_alarm_autoscaling_group_name = module.asg.autoscaling_group_name
 
 # --- Scale out policy triggered by CPU below 50% Cloud_Watch Alarm ---
-scale_in_policy_name                      = "scale_in_policy"
-scale_in_policy_scaling_adjustment        = -1
-scale_in_policy_adjustment_type           = "ChangeInCapacity"
-scale_in_policy_cooldown                  = 120
-scale_in_policy_autoscaling_group_name    = aws_autoscaling_group.web_server_asg.id
+  scale_in_policy_name                      = "scale_in_policy"
+  scale_in_policy_scaling_adjustment        = -1
+  scale_in_policy_adjustment_type           = "ChangeInCapacity"
+  scale_in_policy_cooldown                  = 120
+  scale_in_policy_autoscaling_group_name    = module.asg.autoscaling_group_id
+}
