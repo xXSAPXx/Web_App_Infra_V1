@@ -1,16 +1,25 @@
 
-################################################################################################################
-############ CLOUDFLARE PROVIDER ######################## CLOUDFLARE PROVIDER ##################################
 
-# Cloudflare Provider: 
+
+# Cloudflare and AWS Providers: 
 terraform {
   required_providers {
+    
     cloudflare = {
       source  = "cloudflare/cloudflare"
+      version = "~> 4.0"
+    }
+
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
     }
   }
 }
 
+
+################################################################################################################################
+######################################## CLOUDFLARE MODULES ####################################################################
 
 # Create a Cloudflare DNS record to the ALB CNAME or IP - [SSL cert validation is handled in module alb_cert_validation]
 module "cloudflare_dns" {
@@ -31,14 +40,14 @@ module "cloudflare_dns" {
 
 
 
-###################################################################################################################
-############ AWS PROVIDER ################################## AWS PROVIDER #########################################
 
-# AWS Provider: 
+#########################################################################################################################
+######################################## AWS MODULES ####################################################################
+
+# AWS provider region: 
 provider "aws" {
-  region = "us-east-1"  # Replace with your preferred region
+  region = "us-east-1"  # Or use a variable if you prefer
 }
-
 
 # Networking: 
 # Crate VPC / Subnets / Nat_Gateway / RDS_Subnet_Group /Routing / Route53_Private_Zone
