@@ -172,3 +172,55 @@ variable "alb_tag_name" {
   type        = string
   default     = "asg-web-servers-alb"
 }
+
+########################## ALB LISTENERS Variables #############################
+
+### HTTP LISTENER: 
+variable "http_listener_port" {
+  description = "Port for the HTTP Listener"
+  type        = number
+  default     = 80
+}
+
+variable "http_listener_redirect_protocol" {
+  description = "Redirect HTTP traffic to this protocol"
+  type        = string
+  default     = "HTTPS"
+}
+
+variable "http_listener_redirect_port" {
+  description = "Redirect HTTP traffic to this port"
+  type        = string
+  default     = "443"
+}
+
+variable "http_listener_redirect_status_code" {
+  description = "Redirect Status Code"
+  type        = string
+  default     = "HTTP_301"
+}
+
+
+### HTTPS LISTENER: 
+variable "https_listener_port" {
+  description = "Port for the HTTPS Listener"
+  type        = number
+  default     = 443
+}
+
+variable "https_listener_ssl_policy" {
+  description = "SSL Policy for the HTTPS Listener"
+  type        = string
+  default     = "ELBSecurityPolicy-2016-08"
+}
+
+variable "https_listener_certificate_arn" {
+  description = "SSL Cert for the HTTPS Listener"
+  type        = string
+}
+
+variable "backend_path_patterns" {
+  description = "List of path patterns to forward to the backend_tg"
+  type        = list(string)
+  default     = ["/api/*"]
+}
