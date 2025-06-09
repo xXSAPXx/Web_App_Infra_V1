@@ -72,7 +72,7 @@ variable "rds_security_group_ids" {
 }
 
 variable "rds_subnet_group_name" {
-  type        = list(string)
+  type        = list
   description = "RDS Subnet Group ID"
 }
 
