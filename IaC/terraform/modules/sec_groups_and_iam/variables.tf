@@ -49,12 +49,6 @@ variable "bastion_host_cidr_block" {
 }
 
 
-variable "vpc_security_group_ids" {
-  type        = list(string)
-  description = "Sec_group id for the RDS Instance"
-}
-
-
 ##############################################
 # ALB SEC_GROUP VARIABLES:
 ##############################################
