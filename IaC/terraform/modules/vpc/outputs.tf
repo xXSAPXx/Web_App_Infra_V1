@@ -36,13 +36,13 @@ output "private_subnet_2_id" {
 }
 
 
-output "db_subnet_group_name" {
+output "rds_subnet_group_name" {
   description = "The name of the RDS DB Subnet Group."
   value       = aws_db_subnet_group.mydb_subnet_group.name
 }
 
 
-output "private_zone_id" {
+output "private_dns_zone_id" {
   description = "The ID of the Route53 private zone."
   value       = aws_route53_zone.private.zone_id
 }

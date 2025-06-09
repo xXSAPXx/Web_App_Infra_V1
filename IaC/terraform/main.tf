@@ -129,29 +129,32 @@ module "database" {
 
 # -------- RDS Configuration Settings --------
 
-  engine               = "mysql"
-  engine_version       = "8.0.35"
-  instance_class       = "db.t3.micro"
-  allocated_storage    = 20
-  storage_encrypted    = true
+  rds_engine               = "mysql"
+  rds_engine_version       = "8.0.35"
+  rds_instance_class       = "db.t3.micro"
+  rds_allocated_storage    = 20
+  rds_storage_encrypted    = true
 
   #db_name             = "calc_app_rds_iac"    # No need since we restore from snapshot.
   #username            = "admin"               # No need since we restore from snapshot.
   #password            = "12345678"            # No need since we restore from snapshot.
 
-  port                 = "3306"
-  parameter_group_name = "default.mysql8.0"
-  publicly_accessible  = false
+  rds_port                 = "3306"
+  rds_parameter_group_name = "default.mysql8.0"
+  rds_publicly_accessible  = false
   
   rds_security_group_ids = [module.sec_groups_and_iam.rds_security_group_id]
-  rds_subnet_group_name  = module.vpc.db_subnet_group_name
+  rds_subnet_group_name  = [module.vpc.rds_subnet_group_name]
 
-  snapshot_identifier  = "calculator-app-rds-final-snapshot-iac"  # Replace with your snapshot ID from which you want the DB to be created 
+  rds_snapshot_identifier  = "calculator-app-rds-final-snapshot-iac"  # Replace with your snapshot ID from which you want the DB to be created 
   maintenance_window   = "mon:19:00-mon:19:30"
   
   # Prevent deletion of the database
-  skip_final_snapshot       = false
-  final_snapshot_identifier = "calculator-app-rds-final-snapshot-iac2"
+  skip_final_snapshot           = false
+  rds_final_snapshot_identifier = "calculator-app-rds-final-snapshot-iac2"
+
+  # Pass DB ENDPOINT and Route53_Private_Zone_ID to userdata script:
+  private_dns_zone_id           = module.vpc.private_dns_zone_id
 }
 
 
