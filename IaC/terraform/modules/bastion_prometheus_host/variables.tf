@@ -48,10 +48,8 @@ variable "volume_type" {
 
 variable "bastion_host_tag_name" {
   description = "Tags to apply to the EC2 instance"
-  type        = map(string)
-  default     = {
-    Name = "Bastion-Prometheus-IaC"
-  }
+  type        = string
+  default     = "Bastion-Prometheus-IaC"
 }
 
 

@@ -134,10 +134,6 @@ variable "alb_name" {
   default     = "alb-web-servers-asg"
 }
 
-variable "alb_vpc_id" {
-  description = "VPC for the ALB"
-  type        = string
-}
 
 variable "alb_subnets" {
   description = "Subnets for the ALB"    # We need 2 Subnets for the ALB to work

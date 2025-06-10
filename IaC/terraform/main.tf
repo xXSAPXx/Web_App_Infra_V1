@@ -93,7 +93,7 @@ module "vpc" {
 # Create ALL Security Groups: 
 ######################################################################################
 
-module "aws_security" {
+module "sec_groups_and_iam" {
   source = "./modules/sec_groups_and_iam"
 
 # For all SGs:
@@ -226,7 +226,6 @@ module "alb" {
 
 # ----------- ALB Configuration Settings -----------
   alb_name                       = "alb-web-servers-asg"
-  alb_vpc_id                     = module.vpc.vpc_id
   alb_subnets                    = [module.vpc.public_subnet_1_id, module.vpc.public_subnet_2_id]   # We need 2 Subnets for the ALB to work
   alb_security_groups            = [module.sec_groups_and_iam.alb_security_group_id]
   alb_load_balancer_type         = "application"
@@ -263,7 +262,7 @@ module "alb" {
 # Create Amazon-issued TLS certificate for our domain: [Specifies DNS validation.] AND VALIDATE CERT! 
 ########################################################################################################
 
-module "alb_cert" {
+module "alb_ssl_cert_validation" {
   source = "./modules/alb_ssl_cert_validation"
   domain_name         = "xxsapxx.uk"
   san                 = ["www.xxsapxx.uk"]
@@ -275,7 +274,7 @@ module "alb_cert" {
 
 # Create Lunch Template and the ASG:  
 ########################################################################################################
-module "asg_creation" {
+module "asg" {
   source = "./modules/asg"
   depends_on = [module.database] # Ensure the launch configuration is created only after the RDS Module.
 

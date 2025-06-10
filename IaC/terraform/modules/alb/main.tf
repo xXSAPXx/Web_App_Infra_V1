@@ -55,7 +55,6 @@ resource "aws_lb_target_group" "backend_tg" {
 # Define the Application Load Balancer
 resource "aws_lb" "web_alb" {
   name               = var.alb_name
-  vpc_id             = var.alb_vpc_id
   internal           = var.alb_internal
   load_balancer_type = var.alb_load_balancer_type
   security_groups    = var.alb_security_groups
