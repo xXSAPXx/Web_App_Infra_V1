@@ -211,7 +211,7 @@ module "alb" {
   backend_tg_protocol  = "HTTP"
     
   # Health_Check:
-  backend_tg_path                 = "/health"
+  backend_tg_path                 = "/backend"
   backend_tg_interval             = 30
   backend_tg_timeout              = 5
   backend_tg_healthy_threshold    = 2
