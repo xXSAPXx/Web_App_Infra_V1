@@ -172,8 +172,8 @@ module "bastion_prometheus" {
   subnet_id               = module.vpc.public_subnet_2_id
   bastion_sec_group_ids   = [module.sec_groups_and_iam.bastion_host_security_group_id]
   key_name                = "Test.env"
-  user_data_path          = "${path.module}/modules/bastion_prometheus_host/userdata_for_bastion_prometheus_host.tpl"
-  
+  user_data_path          = file("${path.module}/modules/bastion_prometheus_host/userdata_for_bastion_prometheus_host.tpl")
+                              
   volume_size = 10
   volume_type = "gp2"
   
@@ -284,7 +284,7 @@ module "asg" {
   launch_template_image_id        = "ami-0583d8c7a9c35822c"
   launch_template_instance_type   = "t2.micro"
   launch_template_key_name        = "Test.env"
-  launch_template_user_data       = "${path.module}/modules/asg/userdata_for_asg_launch_template.tpl"
+  launch_template_user_data       = file("${path.module}/modules/asg/userdata_for_asg_launch_template.tpl")
 
 # EBS: 
   launch_template_device_name     = "/dev/xvda"

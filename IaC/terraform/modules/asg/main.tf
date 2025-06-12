@@ -7,8 +7,8 @@ resource "aws_launch_template" "web_server_template" {
   image_id      = var.launch_template_image_id
   instance_type = var.launch_template_instance_type
   key_name      = var.launch_template_key_name
+  user_data     = var.launch_template_user_data
 
-  user_data = var.launch_template_user_data
 
   block_device_mappings {
     device_name = var.launch_template_device_name
