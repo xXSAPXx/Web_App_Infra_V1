@@ -358,3 +358,17 @@ module "cloud_watch_alarm_and_scale_policies" {
   scale_in_policy_cooldown                  = 120
   scale_in_policy_autoscaling_group_name    = module.asg.autoscaling_group_id
 }
+
+
+
+# Print all dynamic variables after terrafrom deployment:  
+########################################################################################################
+
+output "private_dns_zone_id" {
+  value = module.vpc.private_dns_zone_id
+}
+
+output "rds_endpoint_id" {
+  value = module.asg.rds_endpoint_debug
+}
+

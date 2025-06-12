@@ -68,5 +68,8 @@ resource "aws_autoscaling_group" "web_server_asg" {
 }
 
 
+output "rds_endpoint_debug" {
+  value = var.database_endpoint
+}
 
 
