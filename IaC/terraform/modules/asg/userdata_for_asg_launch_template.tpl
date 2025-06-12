@@ -65,7 +65,7 @@ sudo touch $DB_ENDPOINT_FILE
 sudo chown "$NODE_APP_USER:$NODE_APP_USER" "$DB_ENDPOINT_FILE"
 
 # Add the RDS endpoint to a file for application use:
-echo "db_endpoint=$${DB_ENDPOINT}" | sudo tee $DB_ENDPOINT_FILE > /dev/null
+echo "db_endpoint=${DB_ENDPOINT}" | sudo tee $DB_ENDPOINT_FILE > /dev/null
 
 # Extract just the hostname from the DB_Endpoint without the PORT:
 DB_ENDPOINT_NO_PORT=$(sudo awk -F= '{sub(/:[0-9]+$/, "", $2); print $2}' $DB_ENDPOINT_FILE)
@@ -153,7 +153,7 @@ TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-meta
 LOCAL_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
 
 # Construct a hostname using the private IP:
-HOSTNAME="web-server-$${LOCAL_IP//./-}.internal.xxsapxx.local"
+HOSTNAME="web-server-${LOCAL_IP//./-}.internal.xxsapxx.local"
 
 # Set the system hostname to the constructed value:
 sudo hostnamectl set-hostname $HOSTNAME
