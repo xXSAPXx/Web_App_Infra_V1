@@ -21,4 +21,4 @@ Browser -----------------> CloudFlare_Proxy -----------------> ALB_DNS ---------
                                                                                 |                           |
                                                                                 V                           V
                                                                 ALB_BACKEND_TG_PORT_3000          ALB_FRONTEND_TG_PORT_80    
-                                                                (HEALTH_CHECK: /health)           (HEALTH_CHECK: /)     
+                                                                (HEALTH_CHECK: /backend)           (HEALTH_CHECK: /)     

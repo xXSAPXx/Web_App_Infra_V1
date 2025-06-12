@@ -87,7 +87,7 @@ app.post('/api/login', (req, res) => {
 });
 
 // Backend Server Endpoint Health Check for AWS ALB:
-app.get('/health', (req, res) => {
+app.get('/backend', (req, res) => {
     res.status(200).send('OK');
   });
 
