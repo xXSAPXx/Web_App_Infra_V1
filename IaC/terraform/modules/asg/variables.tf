@@ -5,7 +5,7 @@
 
 variable "database_endpoint" {
   type        = string
-  description = "The RDS Enpoint Variable Here"
+  description = "The connection endpoint for the RDS instance."
 }
 
 variable "private_dns_zone_id" {

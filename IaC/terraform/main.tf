@@ -275,9 +275,11 @@ module "asg" {
   source = "./modules/asg"
   depends_on = [module.database] # Ensure the launch configuration is created only after the RDS Module.
 
-# Pass DB_ENDPOINT and PRIVATE_DNS_ZONE to Lunch Template User_Data_Script:
+
+# --- Pass DB_ENDPOINT and PRIVATE_DNS_ZONE to Lunch Template User_Data_Script: ---
   database_endpoint   = module.database.rds_endpoint
   private_dns_zone_id = module.vpc.private_dns_zone_id
+
 
 
 # --- Launch Template Settings ---

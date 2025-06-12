@@ -5,8 +5,8 @@
 ############################ System and Terraform Variables:  ################################
 
 # Variables from Terraform: 
-DB_ENDPOINT=${db_endpoint}
-PRIVATE_DNS_ZONE_ID=${private_dns_zone_id}
+DB_ENDPOINT="${db_endpoint}"
+PRIVATE_DNS_ZONE_ID="${private_dns_zone_id}"
 
 # Variables:
 REPO_URL="https://gitlab.com/devops7375008/DevOps_APP.git"
