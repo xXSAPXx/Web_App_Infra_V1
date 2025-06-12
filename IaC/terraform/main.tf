@@ -361,11 +361,13 @@ module "cloud_watch_alarm_and_scale_policies" {
 
 
 
-# Print all dynamic variables after terrafrom deployment:  
+# Print all dynamic variables passed to specified modules after terrafrom deployment: 
+# Usefull for debuging purposes.
+# This ensures the modules received the correct env variables. 
 ########################################################################################################
 
 output "private_dns_zone_id" {
-  value = module.vpc.private_dns_zone_id
+  value = module.asg.private_dns_zone_debug
 }
 
 output "rds_endpoint_id" {
