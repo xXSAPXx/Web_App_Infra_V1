@@ -81,12 +81,3 @@ variable "skip_final_snapshot" {
   description = "CREATE or SKIP the final snapshot on instance termination"
   default     = false
 }
-
-
-##############################################
-# Route53 Private Hosted Zone
-##############################################
-variable "private_dns_zone_id" {
-  type        = string
-  description = "ID of the private Route53 hosted zone to pass to the ASG launch template."
-}

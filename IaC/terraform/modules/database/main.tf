@@ -29,12 +29,3 @@ resource "aws_db_instance" "mydb" {
 }
 
 
-# Pass the DB_ENDPOINT Variable to the userdata script:
-# Pass the ZONE_ID Variable to the userdata script:
-locals {
-  userdata = templatefile("${path.root}/modules/asg/userdata_for_asg_launch_template.tpl", {
-    db_endpoint         = aws_db_instance.mydb.endpoint
-    private_dns_zone_id = var.private_dns_zone_id
-  })
-}
-

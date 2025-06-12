@@ -1,4 +1,17 @@
 ##################################################################
+# Pass the DB_ENDPOINT Variable to the userdata script:
+# Pass the ZONE_ID Variable to the userdata script:
+##################################################################
+
+locals {
+  userdata = templatefile("${path.module}/userdata_for_asg_launch_template.tpl", {
+    db_endpoint         = var.database_endpoint
+    private_dns_zone_id = var.private_dns_zone_id
+  })
+}
+
+
+##################################################################
 # Launch Template For Every EC2 Instance: 
 ##################################################################
 
@@ -53,3 +66,7 @@ resource "aws_autoscaling_group" "web_server_asg" {
   health_check_grace_period = var.asg_health_check_grace_period         # 5 minutes grace period for the instances to finish boot
   depends_on                = [aws_launch_template.web_server_template] # Ensure template is created before ASG
 }
+
+
+
+

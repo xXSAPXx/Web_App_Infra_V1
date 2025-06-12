@@ -4,6 +4,10 @@
 ##############################################################################################
 ############################ System and Terraform Variables:  ################################
 
+# Variables from Terraform: 
+DB_ENDPOINT=${db_endpoint}
+PRIVATE_DNS_ZONE_ID=${private_dns_zone_id}
+
 # Variables:
 REPO_URL="https://gitlab.com/devops7375008/DevOps_APP.git"
 APP_BASE_DIR="/var/www"
@@ -11,10 +15,6 @@ FRONTEND_DIR="$APP_BASE_DIR/html/calculator"  # Actual web root will be $FRONTEN
 BACKEND_DIR="$APP_BASE_DIR/backend"
 STAGING_DIR="/tmp/app_deploy_$(date +%s)"
 NODE_APP_USER="nodeapp"                       # Dedicated user for the Node.js app
-
-# Variables from Terraform: 
-DB_ENDPOINT=${db_endpoint}
-PRIVATE_DNS_ZONE_ID=${private_dns_zone_id}
 
 
 ##############################################################################################################

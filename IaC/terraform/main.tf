@@ -152,9 +152,6 @@ module "database" {
   # Prevent deletion of the database
   skip_final_snapshot           = false
   rds_final_snapshot_identifier = "calculator-app-rds-final-snapshot-iac2"
-
-  # Pass DB ENDPOINT and Route53_Private_Zone_ID to userdata script:
-  private_dns_zone_id           = module.vpc.private_dns_zone_id
 }
 
 
@@ -277,6 +274,10 @@ module "alb_ssl_cert_validation" {
 module "asg" {
   source = "./modules/asg"
   depends_on = [module.database] # Ensure the launch configuration is created only after the RDS Module.
+
+# Pass DB_ENDPOINT and PRIVATE_DNS_ZONE to Lunch Template User_Data_Script:
+  database_endpoint   = module.database.rds_endpoint
+  private_dns_zone_id = module.vpc.private_dns_zone_id
 
 
 # --- Launch Template Settings ---

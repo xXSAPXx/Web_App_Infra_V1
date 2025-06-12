@@ -1,3 +1,19 @@
+
+############################################################################################
+# Pass DB_ENDPOINT and PRIVATE_DNS_ZONE to Lunch Template User_Data_Script:
+############################################################################################
+
+variable "database_endpoint" {
+  type        = string
+  description = "The RDS Enpoint Variable Here"
+}
+
+variable "private_dns_zone_id" {
+  type        = string
+  description = "ID of the private Route53 hosted zone to pass to the ASG launch template."
+}
+
+
 #################### Launch Template Variables ###################
 variable "launch_template_name_prefix" {
   description = "Prefix for the launch template name"
