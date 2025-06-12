@@ -37,10 +37,6 @@ variable "launch_template_key_name" {
   type        = string
 }
 
-variable "launch_template_user_data" {
-  description = "User data script for instance bootstrap"
-  type        = string
-}
 
 variable "launch_template_device_name" {
   description = "Device name for the root volume"

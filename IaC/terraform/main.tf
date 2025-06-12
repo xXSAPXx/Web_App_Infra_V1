@@ -287,7 +287,6 @@ module "asg" {
   launch_template_image_id        = "ami-0583d8c7a9c35822c"
   launch_template_instance_type   = "t2.micro"
   launch_template_key_name        = "Test.env"
-  launch_template_user_data       = filebase64("${path.module}/modules/asg/userdata_for_asg_launch_template.tpl")
 
 # EBS: 
   launch_template_device_name     = "/dev/xvda"
@@ -295,6 +294,7 @@ module "asg" {
   launch_template_volume_type     = "gp2"
 
   launch_template_security_groups = [module.sec_groups_and_iam.asg_security_group_id]
+
 
 
 # --- ASG Configuration Settings ---

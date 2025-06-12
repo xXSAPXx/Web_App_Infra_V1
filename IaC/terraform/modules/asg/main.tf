@@ -1,10 +1,11 @@
-##################################################################
-# Pass the DB_ENDPOINT Variable to the userdata script:
-# Pass the ZONE_ID Variable to the userdata script:
-##################################################################
+###################################################################################
+# Generate a new base64 encoded userdata script for the lunch template.
+# With Added Dynamic Variables for db_endpoint / private_dns_zone_id
+# This script must be passed to the Launch Template! 
+###################################################################################
 
 locals {
-  userdata = templatefile("${path.module}/userdata_for_asg_launch_template.tpl", {
+  launch_template_userdata = templatefile("${path.module}/userdata_for_asg_launch_template.tpl", {
     db_endpoint         = var.database_endpoint
     private_dns_zone_id = var.private_dns_zone_id
   })
@@ -20,7 +21,7 @@ resource "aws_launch_template" "web_server_template" {
   image_id      = var.launch_template_image_id
   instance_type = var.launch_template_instance_type
   key_name      = var.launch_template_key_name
-  user_data     = var.launch_template_user_data
+  user_data     = filebase64(local.launch_template_userdata)
 
 
   block_device_mappings {
