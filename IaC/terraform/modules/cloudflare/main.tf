@@ -12,12 +12,6 @@ terraform {
 }
 
 
-# Select Domain: 
-data "cloudflare_zones" "selected" {
-    name = var.select_domain_name
-}
-
-
 # Change DNS Records to point to the AWS ALB DNS Name: 
 resource "cloudflare_dns_record" "alb_record" { 
   zone_id = var.cloudflare_zone_id                      # Domain Zone ID
