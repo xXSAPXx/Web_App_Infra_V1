@@ -77,8 +77,8 @@ module "vpc" {
 # Create ALL Security Groups: 
 ######################################################################################
 
-module "sec_groups_and_iam" {
-  source = "./modules/sec_groups_and_iam"
+module "security_groups" {
+  source = "./modules/security_groups"
 
 # For all SGs:
 vpc_id = module.vpc.vpc_id
@@ -98,9 +98,21 @@ vpc_id = module.vpc.vpc_id
 
 # --- Web_Servers Sec_Group Settings ---     
   asg_sec_group_cidr_block = "10.0.0.0/24"
-  bastion_host_sec_group   = [module.sec_groups_and_iam.bastion_host_security_group_id] # Only the BASTION_Sec_Group can SSH the WEB_SERVERS! 
+  bastion_host_sec_group   = [module.security_groups.bastion_host_security_group_id] # Only the BASTION_Sec_Group can SSH the WEB_SERVERS! 
   asg_security_group_name  = "asg_servers_sg"
 }
+
+
+
+
+# Create all IAM Roles: 
+######################################################################################
+
+
+
+
+
+
 
 
 
@@ -127,7 +139,7 @@ module "database" {
   rds_parameter_group_name = "default.mysql8.0"
   rds_publicly_accessible  = false
   
-  rds_security_group_ids = [module.sec_groups_and_iam.rds_security_group_id]
+  rds_security_group_ids = [module.security_groups.rds_security_group_id]
   rds_subnet_group_name  = module.vpc.rds_subnet_group_name
 
   rds_snapshot_identifier  = "calculator-app-rds-final-snapshot-iac"  # Replace with your snapshot ID from which you want the DB to be created 
@@ -151,7 +163,7 @@ module "bastion_prometheus" {
   ami_id                  = "ami-0583d8c7a9c35822c"
   instance_type           = "t2.micro"
   subnet_id               = module.vpc.public_subnet_2_id
-  bastion_sec_group_ids   = [module.sec_groups_and_iam.bastion_host_security_group_id]
+  bastion_sec_group_ids   = [module.security_groups.bastion_host_security_group_id]
   key_name                = "Test.env"
   user_data_path          = filebase64("${path.module}/modules/bastion_prometheus_host/userdata_for_bastion_prometheus_host.tpl")
                               
@@ -208,7 +220,7 @@ module "alb" {
 # ----------- ALB Configuration Settings -----------
   alb_name                       = "alb-web-servers-asg"
   alb_subnets                    = [module.vpc.public_subnet_1_id, module.vpc.public_subnet_2_id]   # We need 2 Subnets for the ALB to work
-  alb_security_groups            = [module.sec_groups_and_iam.alb_security_group_id]
+  alb_security_groups            = [module.security_groups.alb_security_group_id]
   alb_load_balancer_type         = "application"
   alb_internal                   = false
   alb_enable_deletion_protection = false
@@ -277,7 +289,7 @@ module "asg" {
   launch_template_volume_size     = 10
   launch_template_volume_type     = "gp2"
 
-  launch_template_security_groups = [module.sec_groups_and_iam.asg_security_group_id]
+  launch_template_security_groups = [module.security_groups.asg_security_group_id]
 
 
 
