@@ -105,14 +105,16 @@ vpc_id = module.vpc.vpc_id
 
 
 
-# Create all IAM Roles: 
+# Create All IAM Policies / Roles and IAM Instance Profiles: 
 ######################################################################################
 
+module "iam" {
+  source = "./modules/iam"
 
+# --- IAM Policy Route53 Zone ID ---
+  private_dns_zone_id  = module.vpc.private_dns_zone_id
 
-
-
-
+}
 
 
 
@@ -166,6 +168,7 @@ module "bastion_prometheus" {
   bastion_sec_group_ids   = [module.security_groups.bastion_host_security_group_id]
   key_name                = "Test.env"
   user_data_path          = filebase64("${path.module}/modules/bastion_prometheus_host/userdata_for_bastion_prometheus_host.tpl")
+  iam_instance_profile    = module.iam.prometheus_server_instance_profile_name
                               
   volume_size = 10
   volume_type = "gp2"
@@ -279,15 +282,16 @@ module "asg" {
 
 
 # --- Launch Template Settings ---
-  launch_template_name_prefix     = "web-server-template"
-  launch_template_image_id        = "ami-0583d8c7a9c35822c"
-  launch_template_instance_type   = "t2.micro"
-  launch_template_key_name        = "Test.env"
+  launch_template_name_prefix             = "web-server-template"
+  launch_template_image_id                = "ami-0583d8c7a9c35822c"
+  launch_template_instance_type           = "t2.micro"
+  launch_template_key_name                = "Test.env"
+  launch_template_instance_profile        = module.iam.launch_template_instance_profile_name
 
 # EBS: 
-  launch_template_device_name     = "/dev/xvda"
-  launch_template_volume_size     = 10
-  launch_template_volume_type     = "gp2"
+  launch_template_device_name             = "/dev/xvda"
+  launch_template_volume_size             = 10
+  launch_template_volume_type             = "gp2"
 
   launch_template_security_groups = [module.security_groups.asg_security_group_id]
 

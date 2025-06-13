@@ -1,6 +1,10 @@
 #!/bin/bash
 
 
+# Install MySQL Client: (Connect to the DB)
+sudo dnf install -y mysql-client
+
+
 #####################################################################################
 ###################### AUTOMATIC (Hostname) DNS REGISTRATION ########################
 
@@ -15,6 +19,7 @@ HOSTNAME="bastion-prometheus-host-${LOCAL_IP//./-}.internal.xxsapxx.local"
 
 # Set the system hostname to the constructed value:
 sudo hostnamectl set-hostname $HOSTNAME
+
 
 
 

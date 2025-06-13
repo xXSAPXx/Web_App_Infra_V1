@@ -37,6 +37,10 @@ variable "launch_template_key_name" {
   type        = string
 }
 
+variable "launch_template_instance_profile" {
+  description = "IAM Role for the Launch Template"
+  type        = string
+}
 
 variable "launch_template_device_name" {
   description = "Device name for the root volume"

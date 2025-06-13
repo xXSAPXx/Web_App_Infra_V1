@@ -34,6 +34,11 @@ variable "user_data_path" {
   type        = string
 }
 
+variable "iam_instance_profile" {
+  description = "IAM Role for the Prometheus Automatic Service Discovery"
+  type        = string
+}
+
 variable "volume_size" {
   description = "EBS Volume GBs Size"
   type        = number

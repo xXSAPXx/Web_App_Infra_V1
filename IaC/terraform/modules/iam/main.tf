@@ -6,7 +6,6 @@
 # Create the IAM policy for the Prometheus Server:
 resource "aws_iam_policy" "prometheus" {
   name = "prometheus-instance-policy"
-
   description = "Policy for Prometheus EC2 instance to allow EC2, ELB, CloudWatch, and ASG reads"
 
   policy = jsonencode({
@@ -48,6 +47,7 @@ resource "aws_iam_policy" "prometheus" {
 }
 
 
+
 # Create the IAM Role for the Prometheus Server: 
 resource "aws_iam_role" "prometheus" {
   name = "prometheus-instance-role"
@@ -71,22 +71,90 @@ resource "aws_iam_role" "prometheus" {
 }
 
 
-# Create the IAM attachment for the Prometheus Server:
+
+
+#####################################################################################
+# IAM FOR AUTO DNS(Route53) REGISTRATION for the ASG Servers:
+#####################################################################################
+
+# Create the IAM policy for DNS Registration: 
+resource "aws_iam_policy" "route53_register" {
+  name        = "route53-register-records"
+  description = "Allow EC2 to register DNS records in private Route53 zones"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "route53:ChangeResourceRecordSets"
+        ],
+        Resource = "arn:aws:route53:::hostedzone/${var.private_dns_zone_id}"
+      },
+      {
+        Effect = "Allow",
+        Action = "route53:ListHostedZones",
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+
+# Create the IAM Role for the Launch Template:  
+resource "aws_iam_role" "dns_updater" {
+  name = "dns-updater-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+################## PROMETHEUS SERVER INSTANCE_PROFILE ##################
+
+# Attach BOTH polices to the Prometheus Server Role: 
 resource "aws_iam_role_policy_attachment" "prometheus" {
   role       = aws_iam_role.prometheus.name
   policy_arn = aws_iam_policy.prometheus.arn
 }
 
+resource "aws_iam_role_policy_attachment" "bastion_route53_attach" {
+  role       = aws_iam_role.prometheus.name
+  policy_arn = aws_iam_policy.route53_register.arn
+}
 
-# Create the IAM instance profile for the Prometheus Server:
+
+# Create the IAM instance profile for the Prometheus Server and attach the required IAM Role: 
 resource "aws_iam_instance_profile" "prometheus" {
   name = "prometheus-instance-profile"
   role = aws_iam_role.prometheus.name
 }
 
 
+################## LAUNCH TEMPLATE INSTANCE_PROFILE ##################
+
+# Attach ONLY the DNS REGISTRATION Policy to the Launch Template Role:   
+resource "aws_iam_role_policy_attachment" "dns_attach" {
+  role       = aws_iam_role.dns_updater.name
+  policy_arn = aws_iam_policy.route53_register.arn
+}
+
+resource "aws_iam_instance_profile" "dns_updater_instance_profile" {
+  name = "dns-updater-instance-profile"
+  role = aws_iam_role.dns_updater.name
+}
 
 
-#####################################################################################
-# IAM FOR AUTO DNS(Route53) REGISTRATION for the ASG Servers:
-#####################################################################################
+
+
+

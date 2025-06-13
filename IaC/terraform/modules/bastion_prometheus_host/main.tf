@@ -10,6 +10,8 @@ resource "aws_instance" "bastion_prometheus" {
   vpc_security_group_ids = var.bastion_sec_group_ids
   key_name               = var.key_name
   user_data              = var.user_data_path
+  iam_instance_profile   = var.iam_instance_profile
+
 
   root_block_device {
     volume_size = var.volume_size

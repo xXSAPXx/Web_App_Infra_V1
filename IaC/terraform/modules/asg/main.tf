@@ -17,12 +17,15 @@ locals {
 ##################################################################
 
 resource "aws_launch_template" "web_server_template" {
-  name_prefix   = var.launch_template_name_prefix
-  image_id      = var.launch_template_image_id
-  instance_type = var.launch_template_instance_type
-  key_name      = var.launch_template_key_name
-  user_data     = base64encode(local.launch_template_userdata)
-
+  name_prefix           = var.launch_template_name_prefix
+  image_id              = var.launch_template_image_id
+  instance_type         = var.launch_template_instance_type
+  key_name              = var.launch_template_key_name
+  user_data             = base64encode(local.launch_template_userdata)
+  
+  iam_instance_profile {
+    name = var.launch_template_instance_profile
+  }
 
   block_device_mappings {
     device_name = var.launch_template_device_name
