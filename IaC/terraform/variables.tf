@@ -11,3 +11,9 @@ variable "cloudflare_zone_id" {
   sensitive   = true
   description = "Zone ID of the Cloudflare domain"
 }
+
+variable "cloudflare_domain_name" {
+  type        = string
+  sensitive   = true
+  description = "Cloudflare Domain Name for Configuration"
+}

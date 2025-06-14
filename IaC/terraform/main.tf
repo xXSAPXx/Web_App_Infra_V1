@@ -14,16 +14,43 @@ provider "cloudflare" {
 module "cloudflare_dns" {
   source = "./modules/cloudflare"
 
-# --- Cloudflare_DNS_Record Settings ---
+# --- Cloudflare_www_DNS_Record Settings ---
   cloudflare_api_token = var.cloudflare_api_token
   cloudflare_zone_id   = var.cloudflare_zone_id
-  select_domain_name   = "xxsapxx.uk"
+  select_domain_name   = var.cloudflare_domain_name
   comment              = "Domain pointed to AWS_ALB"
   sub_domain_name      = "www"
   dns_record_type      = "CNAME" 
   dns_ttl              = 1
   proxied              = true 
   alb_dns_name         = module.alb.alb_dns_name
+
+
+# --- Cloudflare_ROOT_DNS_Record Settings ---
+#cloudflare_api_token        = var.cloudflare_api_token
+#  cloudflare_zone_id        = var.cloudflare_zone_id
+#  select_domain_name        = var.cloudflare_domain_name
+#  root_comment              = "Domain pointed to AWS_ALB"
+#  root_sub_domain_name      = "@"
+#  root_dns_record_type      = "CNAME" 
+#  root_dns_ttl              = 1
+#  root_proxied              = true 
+#  alb_dns_name              = module.alb.alb_dns_name
+
+
+# Cloudflare redirect from ROOT to WWW-Sub_Domain Settings: 
+#------
+#------
+
+
+#Use a redirect rule to enforce https:// (not just http → https at ALB level) -- Cloudflare: (Always Use HTTPS)
+#------
+#------
+
+
+#Use Rate Limiting Rules
+#------
+#------
 }
 
 
@@ -148,7 +175,7 @@ module "database" {
   maintenance_window   = "mon:19:00-mon:19:30"
   
   # Prevent deletion of the database
-  skip_final_snapshot           = false
+  skip_final_snapshot           = true
   rds_final_snapshot_identifier = "calculator-app-rds-final-snapshot-iac2"
 }
 
