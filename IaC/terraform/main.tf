@@ -34,17 +34,13 @@ module "cloudflare_dns" {
   root_dns_ttl         = 1
   root_proxied         = true 
 
-# --- Cloudflare Redirect from ROOT to WWW-Sub_Domain Settings ---
-  rule_name                   = "Redirect from ROOT to WWW"
-  rule_kind                   = "zone"
-  rule_phase                  = "http_request_dynamic_redirect"
-  rule_action                 = "redirect"
-  rule_expression             = "http.host eq \"xxsapxx.uk\""
-  rule_description            = "Redirect root domain to www"
-  rule_status_code            = 301
-  rule_redirect_to            = "https://www.xxsapxx.uk"
-  rule_enabled                = true
-  rule_preserve_query_string  = true
+# --- Cloudflare Page Rule to Redirect from ROOT to WWW-Sub_Domain ---
+  rule_target          = "xxsapxx.uk/*"   # (Catches requests to: http://xxsapxx.uk, https://xxsapxx.uk, xxsapxx.uk/path, etc.)
+  rule_priority        = 1 
+  rule_status          = "active"
+  rule_redirect_to_url = "https://www.xxsapxx.uk"
+  rule_status_code     = 301
+  
 
 # --- Use a redirect rule to enforce https:// (not just http → https at ALB level) -- Cloudflare: (Always Use HTTPS) ---
   setting_id                  = "always_use_https"
@@ -53,6 +49,7 @@ module "cloudflare_dns" {
 #Use Rate Limiting Rules
 #------
 #------
+
 }
 
 

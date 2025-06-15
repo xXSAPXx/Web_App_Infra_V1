@@ -102,54 +102,30 @@ variable "root_proxied" {
 #########################################################################
 # --- Cloudflare_ROOT_to_WWW_DNS_Record Variables ---
 #########################################################################
-variable "rule_name" {
+variable "rule_target" {
   type        = string
-  description = "Name for the Cloudflare Route Rule"
+  description = "Target URL for the rule (Catches requests to: http://xxsapxx.uk, https://xxsapxx.uk, xxsapxx.uk/path, etc.)"
 }
 
-variable "rule_kind" {
-  type        = string
-  description = "Kind for the Cloudflare Route Rule"
+variable "rule_priority" {
+  type        = number
+  description = "The priority of the rule, used to define which Page Rule is processed over another. A higher number indicates a higher priority."
 }
 
-variable "rule_phase" {
+variable "rule_status" {
   type        = string
-  description = "Phase for the Cloudflare Route Rule"
+  description = "Status of the page rule"
 }
 
-variable "rule_action" {
+variable "rule_redirect_to_url" {
   type        = string
-  description = "Action for the Cloudflare rule"
-}
-
-variable "rule_expression" {
-  type        = string
-  description = "What is the specified expression for the rule?"
-}
-
-variable "rule_description" {
-  type        = string
-  description = "Description for the rule"
-}
-
-variable "rule_redirect_to" {
-  type        = string
-  description = "Where to redirect root traffic to? (URL)"
-}
-
-variable "rule_enabled" {
-  type        = bool
-  description = "Is the rule enabled? TRUE / FALSE"
+  description = "Redirect traffic to this URL"
 }
 
 variable "rule_status_code" {
   type        = number
-  description = "Status Code for the Rule"
-}
-
-variable "rule_preserve_query_string" {
-  type        = bool
-  description = "Is the query string preserved? TRUE / FALSE"
+  description = "Permanent Redirect to 301"
+  default     = 301
 }
 
 ###########################################################################################################
