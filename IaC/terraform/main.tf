@@ -14,39 +14,41 @@ provider "cloudflare" {
 module "cloudflare_dns" {
   source = "./modules/cloudflare"
 
-# --- Cloudflare_www_DNS_Record Settings ---
+# --- Cloudflare Variables for the Module ---
   cloudflare_api_token = var.cloudflare_api_token
   cloudflare_zone_id   = var.cloudflare_zone_id
   select_domain_name   = var.cloudflare_domain_name
+  alb_dns_name         = module.alb.alb_dns_name
+
+# --- Cloudflare_WWW_DNS_Record Settings ---  
   comment              = "Domain pointed to AWS_ALB"
   sub_domain_name      = "www"
   dns_record_type      = "CNAME" 
   dns_ttl              = 1
   proxied              = true 
-  alb_dns_name         = module.alb.alb_dns_name
 
+# --- Cloudflare_ROOT_to_WWW_DNS_Record Settings ---
+  root_domain_comment  = "Domain pointed to AWS_ALB"
+  root_domain_name     = "@"
+  root_dns_record_type = "CNAME" 
+  root_dns_ttl         = 1
+  root_proxied         = true 
 
-# --- Cloudflare_ROOT_DNS_Record Settings ---
-#cloudflare_api_token        = var.cloudflare_api_token
-#  cloudflare_zone_id        = var.cloudflare_zone_id
-#  select_domain_name        = var.cloudflare_domain_name
-#  root_comment              = "Domain pointed to AWS_ALB"
-#  root_sub_domain_name      = "@"
-#  root_dns_record_type      = "CNAME" 
-#  root_dns_ttl              = 1
-#  root_proxied              = true 
-#  alb_dns_name              = module.alb.alb_dns_name
+# --- Cloudflare Redirect from ROOT to WWW-Sub_Domain Settings ---
+  rule_name                   = "Redirect from ROOT to WWW"
+  rule_kind                   = "zone"
+  rule_phase                  = "http_request_dynamic_redirect"
+  rule_action                 = "redirect"
+  rule_expression             = "http.host eq \"xxsapxx.uk\""
+  rule_description            = "Redirect root domain to www"
+  rule_status_code            = 301
+  rule_redirect_to            = "https://www.xxsapxx.uk"
+  rule_enabled                = true
+  rule_preserve_query_string  = true
 
-
-# Cloudflare redirect from ROOT to WWW-Sub_Domain Settings: 
-#------
-#------
-
-
-#Use a redirect rule to enforce https:// (not just http → https at ALB level) -- Cloudflare: (Always Use HTTPS)
-#------
-#------
-
+# --- Use a redirect rule to enforce https:// (not just http → https at ALB level) -- Cloudflare: (Always Use HTTPS) ---
+  setting_id                  = "always_use_https"
+  always_use_https_value      = "on"
 
 #Use Rate Limiting Rules
 #------

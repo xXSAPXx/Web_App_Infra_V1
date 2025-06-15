@@ -1,6 +1,7 @@
 
-
-# Set Variable for CloudFlare API_KEY: 
+#########################################################################
+# --- Cloudflare Variables for the Module --- (GLOBAL)
+#########################################################################
 variable "cloudflare_api_token" {
   type        = string
   description = "API token with DNS edit permissions"
@@ -8,8 +9,6 @@ variable "cloudflare_api_token" {
   nullable    = false
 }
 
-
-# Set Variable for CloudFlare ZONE_ID: 
 variable "cloudflare_zone_id" {
   type        = string
   description = "Zone ID for the Cloudflare domain"
@@ -17,24 +16,29 @@ variable "cloudflare_zone_id" {
   nullable    = false
 }
 
-
 variable "select_domain_name" {
   type        = string
   description = "Domain name managed in Cloudflare (e.g., xxsapxx.uk)"
 }
 
+variable "alb_dns_name" {
+  type        = string
+  description = "The DNS name of the AWS ALB to point the CNAME record to"
+}
 
+
+#########################################################################
+# --- Cloudflare_WWW_DNS_Record Variables--- 
+#########################################################################
 variable "comment" {
   type        = string
   description = "Comment for the DNS Record"
 }
 
-
 variable "sub_domain_name" {
   type        = string
   description = "Choose a subdomain for the DNS Record"
 }
-
 
 variable "dns_record_type" {
   type        = string
@@ -45,7 +49,6 @@ variable "dns_record_type" {
   }
 }
 
-
 variable "dns_ttl" {
   type        = number
   description = "DNS TTL"
@@ -55,14 +58,110 @@ variable "dns_ttl" {
   }
 }
 
-
 variable "proxied" {
   type        = bool
   description = "Proxied through CloudFlare: True/False"
 }
 
-
-variable "alb_dns_name" {
+#########################################################################
+# --- Cloudflare_ROOT_to_WWW_DNS_Record Variables ---
+#########################################################################
+variable "root_domain_comment" {
   type        = string
-  description = "The DNS name of the AWS ALB to point the CNAME record to"
+  description = "Comment for the DNS Record"
+}
+
+variable "root_domain_name" {
+  type        = string
+  description = "Choose a subdomain for the DNS Record"
+}
+
+variable "root_dns_record_type" {
+  type        = string
+  description = "DNS Record Type"
+  validation {
+    condition     = contains(["A", "AAAA", "CNAME", "TXT"], var.root_dns_record_type)
+    error_message = "Only A, AAAA, CNAME, or TXT record types are allowed."
+  }
+}
+
+variable "root_dns_ttl" {
+  type        = number
+  description = "DNS TTL"
+  validation {
+    condition = contains([1, 120, 300, 600, 900, 1800, 3600, 7200, 14400, 28800, 43200, 86400], var.root_dns_ttl)
+    error_message = "TTL must be 1 (automatic) or one of Cloudflare’s supported TTL values."
+  }
+}
+
+variable "root_proxied" {
+  type        = bool
+  description = "Proxied through CloudFlare: True/False"
+}
+
+#########################################################################
+# --- Cloudflare_ROOT_to_WWW_DNS_Record Variables ---
+#########################################################################
+variable "rule_name" {
+  type        = string
+  description = "Name for the Cloudflare Route Rule"
+}
+
+variable "rule_kind" {
+  type        = string
+  description = "Kind for the Cloudflare Route Rule"
+}
+
+variable "rule_phase" {
+  type        = string
+  description = "Phase for the Cloudflare Route Rule"
+}
+
+variable "rule_action" {
+  type        = string
+  description = "Action for the Cloudflare rule"
+}
+
+variable "rule_expression" {
+  type        = string
+  description = "What is the specified expression for the rule?"
+}
+
+variable "rule_description" {
+  type        = string
+  description = "Description for the rule"
+}
+
+variable "rule_redirect_to" {
+  type        = string
+  description = "Where to redirect root traffic to? (URL)"
+}
+
+variable "rule_enabled" {
+  type        = bool
+  description = "Is the rule enabled? TRUE / FALSE"
+}
+
+variable "rule_status_code" {
+  type        = number
+  description = "Status Code for the Rule"
+}
+
+variable "rule_preserve_query_string" {
+  type        = bool
+  description = "Is the query string preserved? TRUE / FALSE"
+}
+
+###########################################################################################################
+# --- Use a redirect rule to enforce https:// (not just http → https at ALB level) ---
+###########################################################################################################
+variable "setting_id" {
+  type        = string
+  description = "Name for the zone setting"
+}
+
+variable "always_use_https_value" {
+  type    = string
+  description = "Value for always_use_https ON / OFF"
+  default = "on"
 }
