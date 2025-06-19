@@ -129,7 +129,7 @@ variable "rule_status_code" {
 }
 
 ###########################################################################################################
-# --- Use a redirect rule to enforce https:// (not just http → https at ALB level) ---
+# --- Use a redirect rule to enforce https:// (not just http → https at ALB level) --- Variables
 ###########################################################################################################
 variable "setting_id" {
   type        = string
@@ -141,3 +141,7 @@ variable "always_use_https_value" {
   description = "Value for always_use_https ON / OFF"
   default = "on"
 }
+
+###########################################################################################################
+# Rate Limiting Rules for DDoS Protection Variables:
+###########################################################################################################

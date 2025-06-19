@@ -46,7 +46,11 @@ module "cloudflare_dns" {
   setting_id                  = "always_use_https"
   always_use_https_value      = "on"
 
-#Use Rate Limiting Rules
+
+# Enable HSTS (Strict-Transport-Security) in Cloudflare: (NOT AVAILABLE IN TERRAFORM)
+ 
+
+# Use Rate Limiting Rules for DDoS Protection: 
 #------
 #------
 

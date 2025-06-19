@@ -58,3 +58,10 @@ resource "cloudflare_zone_setting" "https" {
   setting_id        = var.setting_id
   value             = var.always_use_https_value
 }
+
+
+# Enable HSTS (Strict-Transport-Security) in Cloudflare: (NOT AVAILABLE IN TERRAFORM)
+
+
+# Rate Limiting Rules for DDoS Protection:  
+#--- 
