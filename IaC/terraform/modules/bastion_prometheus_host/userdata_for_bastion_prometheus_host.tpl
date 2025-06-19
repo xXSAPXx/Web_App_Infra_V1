@@ -44,8 +44,8 @@ sudo dnf install -y awscli
 #}"
 
 
-#####################################################################################
-############################### INSTALL PROMETHEUS ##################################
+#####################################################################################################################################
+############################### INSTALL PROMETHEUS ##################################################################################
 
 # Variables:
 PROMETHEUS_SYSTEMD_UNIT_FILE="/etc/systemd/system/prometheus.service"
@@ -69,8 +69,8 @@ cd $PROMETHEUS_DIR
 
 
 # Install Prometheus LTS Version (2.53.4):
-sudo wget https://github.com/prometheus/prometheus/releases/download/v$PROM_VERSION/prometheus-$PROM_VERSION.linux-amd64.tar.gz
-sudo tar -xzf prometheus-$PROM_VERSION.linux-amd64.tar.gz
+sudo wget https://github.com/prometheus/prometheus/releases/download/v$PROMETHEUS_VERSION/prometheus-$PROMETHEUS_VERSION.linux-amd64.tar.gz
+sudo tar -xzf prometheus-$PROMETHEUS_VERSION.linux-amd64.tar.gz
 
 
 # Copy the binary files to default locations: 
@@ -105,13 +105,6 @@ ExecStart=$PROMETHEUS_BINARY_DIR/prometheus \
 [Install]
 WantedBy=multi-user.target
 EOL
-
-
-# Reload all systemd services: 
-sudo chmod 664 $PROMETHEUS_SYSTEMD_UNIT_FILE
-sudo systemctl daemon-reload
-sudo systemctl enable prometheus.service
-sudo systemctl start prometheus.service
 
 
 # Configure Prometheus settings: [AUTO DISCOVERY SERVICE + SEND METRICS TO GRAFANA CLOUD]
@@ -158,9 +151,16 @@ scrape_configs:
 EOL
 
 
+# Reload all systemd services: 
+sudo chmod 664 $PROMETHEUS_SYSTEMD_UNIT_FILE
+sudo systemctl daemon-reload
+sudo systemctl enable prometheus.service
+sudo systemctl start prometheus.service
 
-#####################################################################################
-############################### INSTALL NODE EXPORTER ###############################
+
+
+#####################################################################################################################################
+############################### INSTALL NODE EXPORTER ###############################################################################
 
 NODE_EXPORTER_UNIT_FILE="/etc/systemd/system/node_exporter.service"
 NODE_EXPORTER_DIR="/var/lib/node_exporter"
