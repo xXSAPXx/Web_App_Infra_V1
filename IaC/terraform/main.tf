@@ -51,9 +51,6 @@ module "cloudflare_dns" {
  
 
 # Use Rate Limiting Rules for DDoS Protection: 
-#------
-#------
-
 }
 
 

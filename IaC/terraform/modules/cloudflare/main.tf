@@ -63,5 +63,5 @@ resource "cloudflare_zone_setting" "https" {
 # Enable HSTS (Strict-Transport-Security) in Cloudflare: (NOT AVAILABLE IN TERRAFORM)
 
 
-# Rate Limiting Rules for DDoS Protection:  
-#--- 
+# Rate Limiting Rules for DDoS Protection: ()
+
