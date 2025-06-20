@@ -140,20 +140,18 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
     relabel_configs:
-    - source_labels: [__host__]
+    - source_labels: [__meta_ec2_tag_Name, __meta_ec2_instance_id]
       target_label: instance
-      regex: '(.*)'
-      replacement: '$1'
+      replacement: "$1-$2" 
 
   ######## EC2 Dynamic Discovery Job: ########
   - job_name: "ec2-instances"
     ec2_sd_configs:
       - region: us-east-1
     relabel_configs:
-    - source_labels: [__meta_ec2_public_hostname]
+    - source_labels: [__meta_ec2_tag_Name, __meta_ec2_instance_id]
       target_label: instance
-      regex: "(.*):.*"
-      replacement: '$1' 
+      replacement: "$1-$2" 
 EOL
 
 
