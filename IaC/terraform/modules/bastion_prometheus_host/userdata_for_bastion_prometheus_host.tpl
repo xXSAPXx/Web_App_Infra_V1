@@ -152,7 +152,7 @@ scrape_configs:
     relabel_configs:
     - source_labels: [__meta_ec2_public_hostname]
       target_label: instance
-      regex: '(.*)'
+      regex: "(.*):.*"
       replacement: '$1' 
 EOL
 

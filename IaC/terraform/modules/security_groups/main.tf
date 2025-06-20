@@ -133,6 +133,13 @@ resource "aws_security_group" "web_servers_sg" {
     cidr_blocks = [var.asg_sec_group_cidr_block] # Only inside VPC
   }
 
+  ingress {
+    from_port   = 9100
+    to_port     = 9100
+    protocol    = "tcp"
+    cidr_blocks = [var.asg_sec_group_cidr_block] # Node Exporter / # Only inside VPC
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
