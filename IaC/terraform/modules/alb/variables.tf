@@ -136,7 +136,7 @@ variable "alb_name" {
 
 
 variable "alb_subnets" {
-  description = "Subnets for the ALB"    # We need 2 Subnets for the ALB to work
+  description = "Subnets for the ALB" # We need 2 Subnets for the ALB to work
   type        = list(string)
 }
 

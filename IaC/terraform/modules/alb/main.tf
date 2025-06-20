@@ -10,9 +10,9 @@ resource "aws_lb_target_group" "frontend_tg" {
   port     = var.frontend_tg_port
   protocol = var.frontend_tg_protocol
   vpc_id   = var.vpc_id
-  
+
   health_check {
-    path                = var.frontend_tg_path         # Path to your health_check.html file OR "/" FOR GENERIC ROOT_PATH HEALTH_CHECK
+    path                = var.frontend_tg_path # Path to your health_check.html file OR "/" FOR GENERIC ROOT_PATH HEALTH_CHECK
     interval            = var.frontend_tg_interval
     timeout             = var.frontend_tg_timeout
     healthy_threshold   = var.frontend_tg_healthy_threshold
@@ -20,7 +20,7 @@ resource "aws_lb_target_group" "frontend_tg" {
     matcher             = var.frontend_tg_matcher
   }
 
-    tags = {
+  tags = {
     Name = var.frontend_tg_tag_name
   }
 }
@@ -34,14 +34,14 @@ resource "aws_lb_target_group" "backend_tg" {
   vpc_id   = var.vpc_id
 
   health_check {
-  path                = var.backend_tg_path       # Backend Server Endpoint Health Check defined in server.js:
-  interval            = var.backend_tg_interval
-  timeout             = var.backend_tg_timeout
-  healthy_threshold   = var.backend_tg_healthy_threshold
-  unhealthy_threshold = var.backend_tg_unhealthy_threshold
-  matcher             = var.backend_tg_matcher
-}
-    tags = {
+    path                = var.backend_tg_path # Backend Server Endpoint Health Check defined in server.js:
+    interval            = var.backend_tg_interval
+    timeout             = var.backend_tg_timeout
+    healthy_threshold   = var.backend_tg_healthy_threshold
+    unhealthy_threshold = var.backend_tg_unhealthy_threshold
+    matcher             = var.backend_tg_matcher
+  }
+  tags = {
     Name = var.backend_tg_tag_name
   }
 }
@@ -58,8 +58,8 @@ resource "aws_lb" "web_alb" {
   internal           = var.alb_internal
   load_balancer_type = var.alb_load_balancer_type
   security_groups    = var.alb_security_groups
-  subnets            = var.alb_subnets            # We need 2 Subnets for the ALB to work
-  
+  subnets            = var.alb_subnets # We need 2 Subnets for the ALB to work
+
 
   enable_deletion_protection = var.alb_enable_deletion_protection
 

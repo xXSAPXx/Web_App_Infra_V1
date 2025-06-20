@@ -48,7 +48,7 @@ variable "cpu_above_70_alarm_alarm_description" {
 variable "cpu_above_70_alarm_actions_enabled" {
   type        = bool
   description = "Whether actions are enabled for high CPU alarm"
-  default     = true 
+  default     = true
 }
 
 variable "cpu_above_70_alarm_autoscaling_group_name" {
@@ -65,7 +65,7 @@ variable "scale_out_policy_name" {
 variable "scale_out_policy_scaling_adjustment" {
   type        = number
   description = "Scaling adjustment for scale-out policy"
-  default     = 1 
+  default     = 1
 }
 
 variable "scale_out_policy_adjustment_type" {
@@ -76,7 +76,7 @@ variable "scale_out_policy_adjustment_type" {
 variable "scale_out_policy_cooldown" {
   type        = number
   description = "Cooldown period for scale-out policy"
-  default     = 120 
+  default     = 120
 }
 
 variable "scale_out_policy_autoscaling_group_name" {

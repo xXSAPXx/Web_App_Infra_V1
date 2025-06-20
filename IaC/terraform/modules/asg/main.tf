@@ -17,12 +17,12 @@ locals {
 ##################################################################
 
 resource "aws_launch_template" "web_server_template" {
-  name_prefix           = var.launch_template_name_prefix
-  image_id              = var.launch_template_image_id
-  instance_type         = var.launch_template_instance_type
-  key_name              = var.launch_template_key_name
-  user_data             = base64encode(local.launch_template_userdata)
-  
+  name_prefix   = var.launch_template_name_prefix
+  image_id      = var.launch_template_image_id
+  instance_type = var.launch_template_instance_type
+  key_name      = var.launch_template_key_name
+  user_data     = base64encode(local.launch_template_userdata)
+
   iam_instance_profile {
     name = var.launch_template_instance_profile
   }
@@ -52,10 +52,10 @@ resource "aws_autoscaling_group" "web_server_asg" {
 
   }
 
-  min_size             = var.asg_min_size
-  max_size             = var.asg_max_size
-  desired_capacity     = var.asg_desired_capacity
-  vpc_zone_identifier  = var.asg_vpc_zone_identifier   # Deploy EC2s in both private subnets
+  min_size            = var.asg_min_size
+  max_size            = var.asg_max_size
+  desired_capacity    = var.asg_desired_capacity
+  vpc_zone_identifier = var.asg_vpc_zone_identifier # Deploy EC2s in both private subnets
 
   # This ASG acts like a FRONTEND and BACKEND at the same time so we add both ALB target groups here: 
   target_group_arns = var.asg_target_group_arns

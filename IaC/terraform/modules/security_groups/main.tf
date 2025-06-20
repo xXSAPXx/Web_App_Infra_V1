@@ -10,14 +10,14 @@ resource "aws_security_group" "rds_sg" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = [var.rds_cidr_block]          # (Only inside VPC)
+    cidr_blocks = [var.rds_cidr_block] # (Only inside VPC)
   }
 
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [var.rds_cidr_block]                 # (Only inside VPC)
+    cidr_blocks = [var.rds_cidr_block] # (Only inside VPC)
   }
 
   tags = {
@@ -116,21 +116,21 @@ resource "aws_security_group" "web_servers_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = [var.asg_sec_group_cidr_block]        # Only inside VPC
+    cidr_blocks = [var.asg_sec_group_cidr_block] # Only inside VPC
   }
 
   ingress {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = var.bastion_host_sec_group      # Only the BASTION_Sec_Group can SSH the WEB_SERVERS! 
+    security_groups = var.bastion_host_sec_group # Only the BASTION_Sec_Group can SSH the WEB_SERVERS! 
   }
 
   ingress {
     from_port   = 3000
     to_port     = 3000
     protocol    = "tcp"
-    cidr_blocks = [var.asg_sec_group_cidr_block]        # Only inside VPC
+    cidr_blocks = [var.asg_sec_group_cidr_block] # Only inside VPC
   }
 
   egress {

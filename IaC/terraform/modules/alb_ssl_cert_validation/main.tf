@@ -3,26 +3,26 @@
 terraform {
   required_providers {
     aws = {
-      source  = "hashicorp/aws"
+      source = "hashicorp/aws"
     }
     cloudflare = {
-      source  = "cloudflare/cloudflare"
+      source = "cloudflare/cloudflare"
     }
- }
+  }
 }
 
 
 # This means AWS will provide a DNS CNAME record that you must create (manually or via Terraform) 
 # in your domain's DNS (e.g., Cloudflare, Route 53) to prove ownership before the cert is issued.
 resource "aws_acm_certificate" "alb_cert" {
-  domain_name       = var.domain_name
-  subject_alternative_names = var.san   # Added the www subdomain here
-  validation_method = var.validation_method
+  domain_name               = var.domain_name
+  subject_alternative_names = var.san # Added the www subdomain here
+  validation_method         = var.validation_method
 
   tags = {
     Environment = "prod"
   }
-  
+
   lifecycle {
     create_before_destroy = true
   }
@@ -43,7 +43,7 @@ resource "cloudflare_dns_record" "cert_validation" {
   type    = each.value.type
   content = each.value.value
   ttl     = 60
-  proxied = false                   # IMPORTANT: Validation records MUST NOT be proxied by Cloudflare
+  proxied = false # IMPORTANT: Validation records MUST NOT be proxied by Cloudflare
 }
 
 

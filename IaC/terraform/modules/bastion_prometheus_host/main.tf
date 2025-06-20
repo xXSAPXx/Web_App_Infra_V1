@@ -19,7 +19,7 @@ resource "aws_instance" "bastion_prometheus" {
   }
 
   tags = {
-  Name = var.bastion_host_tag_name
+    Name = var.bastion_host_tag_name
   }
 
 }

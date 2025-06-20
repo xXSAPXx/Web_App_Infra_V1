@@ -53,7 +53,7 @@ variable "dns_ttl" {
   type        = number
   description = "DNS TTL"
   validation {
-    condition = contains([1, 120, 300, 600, 900, 1800, 3600, 7200, 14400, 28800, 43200, 86400], var.dns_ttl)
+    condition     = contains([1, 120, 300, 600, 900, 1800, 3600, 7200, 14400, 28800, 43200, 86400], var.dns_ttl)
     error_message = "TTL must be 1 (automatic) or one of Cloudflare’s supported TTL values."
   }
 }
@@ -89,7 +89,7 @@ variable "root_dns_ttl" {
   type        = number
   description = "DNS TTL"
   validation {
-    condition = contains([1, 120, 300, 600, 900, 1800, 3600, 7200, 14400, 28800, 43200, 86400], var.root_dns_ttl)
+    condition     = contains([1, 120, 300, 600, 900, 1800, 3600, 7200, 14400, 28800, 43200, 86400], var.root_dns_ttl)
     error_message = "TTL must be 1 (automatic) or one of Cloudflare’s supported TTL values."
   }
 }
@@ -137,9 +137,9 @@ variable "setting_id" {
 }
 
 variable "always_use_https_value" {
-  type    = string
+  type        = string
   description = "Value for always_use_https ON / OFF"
-  default = "on"
+  default     = "on"
 }
 
 ###########################################################################################################

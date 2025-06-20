@@ -5,7 +5,7 @@
 
 # Create the IAM policy for the Prometheus Server:
 resource "aws_iam_policy" "prometheus" {
-  name = "prometheus-instance-policy"
+  name        = "prometheus-instance-policy"
   description = "Policy for Prometheus EC2 instance to allow EC2, ELB, CloudWatch, and ASG reads"
 
   policy = jsonencode({
@@ -20,8 +20,8 @@ resource "aws_iam_policy" "prometheus" {
         Resource = "*"
       },
       {
-        Effect = "Allow",
-        Action = "elasticloadbalancing:Describe*",
+        Effect   = "Allow",
+        Action   = "elasticloadbalancing:Describe*",
         Resource = "*"
       },
       {
@@ -34,8 +34,8 @@ resource "aws_iam_policy" "prometheus" {
         Resource = "*"
       },
       {
-        Effect = "Allow",
-        Action = "autoscaling:Describe*",
+        Effect   = "Allow",
+        Action   = "autoscaling:Describe*",
         Resource = "*"
       }
     ]
@@ -93,8 +93,8 @@ resource "aws_iam_policy" "route53_register" {
         Resource = "arn:aws:route53:::hostedzone/${var.private_dns_zone_id}"
       },
       {
-        Effect = "Allow",
-        Action = "route53:ListHostedZones",
+        Effect   = "Allow",
+        Action   = "route53:ListHostedZones",
         Resource = "*"
       }
     ]

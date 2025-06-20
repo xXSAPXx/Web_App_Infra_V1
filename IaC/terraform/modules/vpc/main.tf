@@ -6,7 +6,7 @@
 
 # Create the VPC: 
 resource "aws_vpc" "my_vpc" {
-  cidr_block = var.vpc_cidr_block
+  cidr_block           = var.vpc_cidr_block
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
@@ -17,10 +17,10 @@ resource "aws_vpc" "my_vpc" {
 
 # Create a Public_Subnet_1:
 resource "aws_subnet" "public_subnet_1" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = var.public_subnet_1_cidr
-  availability_zone = var.availability_zone_1 # Replace with your preferred AZ
-  map_public_ip_on_launch = true  		        # Enable this to auto-assign public IPs
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = var.public_subnet_1_cidr
+  availability_zone       = var.availability_zone_1 # Replace with your preferred AZ
+  map_public_ip_on_launch = true                    # Enable this to auto-assign public IPs
   tags = {
     Name = "Public_Subnet_1_IaC"
   }
@@ -29,10 +29,10 @@ resource "aws_subnet" "public_subnet_1" {
 
 # Create Public_Subnet_2:
 resource "aws_subnet" "public_subnet_2" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = var.public_subnet_2_cidr 	# Make sure the CIDR block doesn't overlap with the first subnet
-  availability_zone = var.availability_zone_2   # Replace with another AZ in your preferred region
-  map_public_ip_on_launch = true  				      # Enable this to auto-assign public IPs
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = var.public_subnet_2_cidr # Make sure the CIDR block doesn't overlap with the first subnet
+  availability_zone       = var.availability_zone_2  # Replace with another AZ in your preferred region
+  map_public_ip_on_launch = true                     # Enable this to auto-assign public IPs
   tags = {
     Name = "Public_Subnet_2_IaC"
   }
@@ -60,11 +60,11 @@ resource "aws_eip" "nat_eip" {
 
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat_eip.id
-  
+
   # Use a conditional to choose the subnet based on the variable.
   # If the variable is 2, use public_subnet_2.id. Otherwise, use public_subnet_1.id.
-  subnet_id = var.nat_gateway_public_subnet_id == 2 ? aws_subnet.public_subnet_2.id : aws_subnet.public_subnet_1.id
-  depends_on    = [aws_internet_gateway.igw]
+  subnet_id  = var.nat_gateway_public_subnet_id == 2 ? aws_subnet.public_subnet_2.id : aws_subnet.public_subnet_1.id
+  depends_on = [aws_internet_gateway.igw]
 }
 
 
@@ -75,10 +75,10 @@ resource "aws_nat_gateway" "nat" {
 
 # Create a Private_Subnet_1:
 resource "aws_subnet" "private_subnet_1" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = var.private_subnet_1_cidr # Make sure the CIDR block doesn't overlap with the public subnet
-  availability_zone = var.availability_zone_1   # Same AZ as the first public subnet
-  map_public_ip_on_launch = false               # DO NOT Auto-assign public IPs!
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = var.private_subnet_1_cidr # Make sure the CIDR block doesn't overlap with the public subnet
+  availability_zone       = var.availability_zone_1   # Same AZ as the first public subnet
+  map_public_ip_on_launch = false                     # DO NOT Auto-assign public IPs!
   tags = {
     Name = "Private_Subnet_1_IaC"
   }
@@ -88,10 +88,10 @@ resource "aws_subnet" "private_subnet_1" {
 
 # Create a Private_Subnet_2:
 resource "aws_subnet" "private_subnet_2" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = var.private_subnet_2_cidr # Make sure the CIDR block doesn't overlap with the public subnet
-  availability_zone = var.availability_zone_2   # Same AZ as the second public subnet
-  map_public_ip_on_launch = false               # DO NOT Auto-assign public IPs!
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = var.private_subnet_2_cidr # Make sure the CIDR block doesn't overlap with the public subnet
+  availability_zone       = var.availability_zone_2   # Same AZ as the second public subnet
+  map_public_ip_on_launch = false                     # DO NOT Auto-assign public IPs!
   tags = {
     Name = "Private_Subnet_2_IaC"
   }
@@ -101,7 +101,7 @@ resource "aws_subnet" "private_subnet_2" {
 
 # Create a subnet group for the RDS instance
 resource "aws_db_subnet_group" "mydb_subnet_group" {
-  name       = "var.rds_subnet_group_name"
+  name = "var.rds_subnet_group_name"
   subnet_ids = [
     aws_subnet.private_subnet_1.id,
     aws_subnet.private_subnet_2.id
@@ -126,7 +126,7 @@ resource "aws_route_table" "public_rt" {
 
   route {
     cidr_block = "0.0.0.0/0" # Any traffic destined for an address outside the VPC will be directed to the VPC internet gateway
-    gateway_id = aws_internet_gateway.igw.id    
+    gateway_id = aws_internet_gateway.igw.id
   }
 
   tags = {
