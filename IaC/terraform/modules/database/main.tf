@@ -9,7 +9,7 @@ resource "aws_db_instance" "mydb" {
   allocated_storage = var.rds_allocated_storage
   storage_encrypted = var.rds_storage_encrypted
 
-  #db_name             = "calc_app_rds_iac"    # No need since we restore from snapshot.
+  #db_name             = "CALC_APP_DB"         # No need since we restore from snapshot.
   #username            = "admin"               # No need since we restore from snapshot.
   #password            = "12345678"            # No need since we restore from snapshot.
 

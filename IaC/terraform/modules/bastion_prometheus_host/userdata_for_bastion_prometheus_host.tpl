@@ -2,7 +2,7 @@
 
 
 # Install MySQL Client: (Connect to the DB)
-sudo dnf install -y mysql-client
+sudo dnf install -y mysql
 
 
 #####################################################################################
