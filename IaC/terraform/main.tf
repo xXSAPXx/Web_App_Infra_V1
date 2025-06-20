@@ -332,7 +332,7 @@ module "asg" {
   asg_target_group_arns         = [module.alb.frontend_target_group_arn, module.alb.backend_target_group_arn]
   asg_health_check_type         = "ELB"
   asg_health_check_grace_period = 300
-  asg_tag_name                  = "Web-Server-IaC"
+  asg_tag_name                  = "web-server"
   asg_propagate_name_at_launch  = true
 }
 
