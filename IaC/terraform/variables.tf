@@ -17,3 +17,9 @@ variable "cloudflare_domain_name" {
   sensitive   = true
   description = "Cloudflare Domain Name for Configuration"
 }
+
+variable "aws_key_pair" {
+  type        = string
+  sensitive   = true
+  description = "SSH KeyPair for the EC2 instances"
+}

@@ -193,7 +193,7 @@ module "bastion_prometheus" {
   instance_type         = "t2.micro"
   subnet_id             = module.vpc.public_subnet_2_id
   bastion_sec_group_ids = [module.security_groups.bastion_host_security_group_id]
-  key_name              = "Test.env"
+  key_name              = var.aws_key_pair
   user_data_path        = filebase64("${path.module}/modules/bastion_prometheus_host/userdata_for_bastion_prometheus_host.tpl")
   iam_instance_profile  = module.iam.prometheus_server_instance_profile_name
 
@@ -312,7 +312,7 @@ module "asg" {
   launch_template_name_prefix      = "web-server-template"
   launch_template_image_id         = "ami-0583d8c7a9c35822c"
   launch_template_instance_type    = "t2.micro"
-  launch_template_key_name         = "Test.env"
+  launch_template_key_name         = var.aws_key_pair
   launch_template_instance_profile = module.iam.launch_template_instance_profile_name
 
   # EBS: 
