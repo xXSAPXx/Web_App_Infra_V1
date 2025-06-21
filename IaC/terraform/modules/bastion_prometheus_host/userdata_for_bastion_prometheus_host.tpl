@@ -135,23 +135,34 @@ rule_files:
 # Here it's Prometheus itself.
 scrape_configs:
 
-  ######### Prometheus Self-Scraping Job: #########
-  - job_name: "bastion-prometheus-server"
-    static_configs:
-      - targets: ["localhost:9090"]
-    relabel_configs:
-    - source_labels: [__meta_ec2_tag_Name, __meta_ec2_instance_id]
-      target_label: instance
-      replacement: "$1-$2" 
 
-  ######## EC2 Dynamic Discovery Job: ########
-  - job_name: "ec2-instances"
+######### Prometheus Self-Scraping Job: #########
+  - job_name: "bastion-prometheus-self-scraping"
+    static_configs:
+    - targets: ["localhost:9090"]
+      labels:
+        instance: "bastion-prometheus-host-9090"
+
+
+######### Scrape node_exporter system metrics from the same host: #########
+  - job_name: "bastion-node-exporter"
+    static_configs:
+    - targets: ["localhost:9100"]
+      labels:
+        instance: "bastion-prometheus-host-9100"
+
+
+######## EC2 Dynamic Discovery Job: ########
+  - job_name: "ec2-node-exporters"
     ec2_sd_configs:
       - region: us-east-1
     relabel_configs:
-    - source_labels: [__meta_ec2_tag_Name, __meta_ec2_instance_id]
+    - source_labels: [__meta_ec2_private_ip]
+      target_label: __address__
+      replacement: "$1:9100"     
+    - source_labels: [__meta_ec2_tag_Name, __meta_ec2_private_ip]
       target_label: instance
-      replacement: "$1-$2" 
+      replacement: "$1-$2"
 EOL
 
 
