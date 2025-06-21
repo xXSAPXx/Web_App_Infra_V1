@@ -145,11 +145,11 @@ scrape_configs:
 
 
 ######### Scrape node_exporter system metrics from the same host: #########
-  - job_name: "bastion-node-exporter"
-    static_configs:
-    - targets: ["localhost:9100"]
-      labels:
-        instance: "bastion-prometheus-host-9100"
+#  - job_name: "bastion-node-exporter"
+#    static_configs:
+#    - targets: ["localhost:9100"]
+#      labels:
+#        instance: "bastion-prometheus-host-9100"
 
 
 ######## EC2 Dynamic Discovery Job: ########
@@ -159,8 +159,9 @@ scrape_configs:
     relabel_configs:
     - source_labels: [__meta_ec2_private_ip]
       target_label: __address__
-      replacement: "$1:9100"     
+      replacement: "$1:9100"
     - source_labels: [__meta_ec2_tag_Name, __meta_ec2_private_ip]
+      regex: (.+);(.+)
       target_label: instance
       replacement: "$1-$2"
 EOL

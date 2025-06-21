@@ -1,8 +1,4 @@
 
-
-
-
-
 # Network Architecture Diagram
 
 This architecture describes traffic flow for the domain `www.xxsapxx.uk` which is proxied through Cloudflare in **Full TLS mode**, routed to an AWS Application Load Balancer (ALB), and forwarded to frontend and backend targets based on path rules.
