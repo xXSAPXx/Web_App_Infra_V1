@@ -401,3 +401,7 @@ output "rds_endpoint_id" {
   value = module.asg.rds_endpoint_debug
 }
 
+output "bastion_host_public_ip" {
+  value = module.bastion_prometheus.bastion_host_public_ip
+}
+
