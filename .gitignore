@@ -1,4 +1,7 @@
 
+# Ignore tfvars.file
+IaC/terraform/*.tfvars
+
 # Ignore Terraform working directory
 IaC/terraform/.terraform/
 
