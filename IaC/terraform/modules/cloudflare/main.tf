@@ -20,7 +20,23 @@ resource "cloudflare_dns_record" "subdomain_to_alb_record" {
   type    = var.dns_record_type    # ALB doesn't have static IP, use CNAME
   content = var.alb_dns_name       # Attach DNS Record to AWS ALB CNAME
   ttl     = var.dns_ttl            # DNS Record TTL 
-  proxied = var.proxied            # Enables Cloudflare HTTPS + caching                                        
+  proxied = var.proxied            # Enables Cloudflare HTTPS + caching
+
+  lifecycle {                      # Prevent RE-Deployment of CloudFlare resource every time we terraform plan
+    ignore_changes = [
+      name,
+      content,
+      meta,
+      modified_on,
+      created_on,
+      comment,
+      comment_modified_on,
+      settings,
+      proxiable,
+      tags,
+      tags_modified_on,
+    ]
+  }                                        
 }
 
 
@@ -32,8 +48,25 @@ resource "cloudflare_dns_record" "root_domain_to_alb_record" {
   type    = var.root_dns_record_type # ALB doesn't have static IP, use CNAME
   content = var.alb_dns_name         # Attach DNS Record to AWS ALB CNAME
   ttl     = var.root_dns_ttl         # DNS Record TTL 
-  proxied = var.root_proxied         # Enables Cloudflare HTTPS + caching                                        
-}
+  proxied = var.root_proxied         # Enables Cloudflare HTTPS + caching
+  
+  lifecycle {                        # Prevent RE-Deployment of CloudFlare resource every time we terraform plan
+    ignore_changes = [
+      name,
+      content,
+      meta,
+      modified_on,
+      created_on,
+      comment,
+      comment_modified_on,
+      settings,
+      proxiable,
+      tags,
+      tags_modified_on,
+    ]
+  }                                        
+}                                        
+
 
 
 # Cloudflare Page Rule to Redirect traffic from ROOT to WWW: ---
