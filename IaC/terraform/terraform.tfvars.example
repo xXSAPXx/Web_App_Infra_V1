@@ -1,3 +1,5 @@
+
+# Create a file named terraform.tfvars (Ignored in .gitignore) in /terraform direcroy in your local repo with the needed TF variables: 
 # TF_VARS: 
 cloudflare_api_token   = <EXMAPLE>
 cloudflare_zone_id     = <EXMAPLE>
