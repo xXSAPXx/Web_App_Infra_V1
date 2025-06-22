@@ -12,12 +12,12 @@ echo "PRIVATE_DNS_ZONE_ID is: $PRIVATE_DNS_ZONE_ID" >> /tmp/debug_env.txt
 
 
 # Variables:
-REPO_URL="https://gitlab.com/devops7375008/DevOps_APP.git"
+REPO_URL="https://github.com/xXSAPXx/Web_App_Infra_V1.git"  # Replace with your actual repository URL
 APP_BASE_DIR="/var/www"
-FRONTEND_DIR="$APP_BASE_DIR/html/calculator"  # Actual web root will be $FRONTEND_DIR/public_frontend
+FRONTEND_DIR="$APP_BASE_DIR/html/calculator"                # Actual web root will be $FRONTEND_DIR/public_frontend
 BACKEND_DIR="$APP_BASE_DIR/backend"
 STAGING_DIR="/tmp/app_deploy_$(date +%s)"
-NODE_APP_USER="nodeapp"                       # Dedicated user for the Node.js app
+NODE_APP_USER="nodeapp"                                     # Dedicated user for the Node.js app
 
 
 ##############################################################################################################
