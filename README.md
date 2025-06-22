@@ -1,5 +1,10 @@
 
-# Network Architecture Diagram
+# Project Architecture Overview:
+![DEV_OPS PROJECT IaC vpd](https://github.com/user-attachments/assets/e1985e2d-49e8-4bc0-955f-d3bdd8346a18)
+
+
+
+# Network Architecture Diagram:
 
 This architecture describes traffic flow for the domain `www.xxsapxx.uk` which is proxied through Cloudflare in **Full TLS mode**, routed to an AWS Application Load Balancer (ALB), and forwarded to frontend and backend targets based on path rules.
 
