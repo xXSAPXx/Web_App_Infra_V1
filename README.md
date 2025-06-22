@@ -1,6 +1,6 @@
 
 # Project Architecture Overview:
-<img src="https://github.com/user-attachments/assets/e1985e2d-49e8-4bc0-955f-d3bdd8346a18" alt="DEV_OPS PROJECT IaC vpd" width="550"/>
+<img src="https://github.com/user-attachments/assets/9bfc34bd-079e-4131-95d2-fa5fb5e1557b" alt="DEV_OPS PROJECT IaC vpd" width="550"/>
 
 
 
