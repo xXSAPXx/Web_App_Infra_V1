@@ -1,5 +1,5 @@
 
-# Required Providers: 
+# Required Terraform Providers and Versions: 
 terraform {
   required_version = ">= 1.10.0"
 
