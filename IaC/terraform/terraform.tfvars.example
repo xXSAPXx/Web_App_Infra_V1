@@ -1,7 +1,9 @@
 
 # Create a file named terraform.tfvars (Ignored in .gitignore) in /terraform direcroy in your local repo with the needed TF variables: 
 # TF_VARS: 
-cloudflare_api_token   = <EXMAPLE>
-cloudflare_zone_id     = <EXMAPLE>
-cloudflare_domain_name = <EXMAPLE>
-aws_key_pair           = <EXMAPLE>
+cloudflare_api_token       = <EXMAPLE>
+cloudflare_zone_id         = <EXMAPLE>
+cloudflare_domain_name     = <EXMAPLE>
+aws_key_pair               = <EXMAPLE>
+prometheus_grafana_user    = <EXMAPLE>
+prometheus_grafana_api_key = <EXMAPLE>
