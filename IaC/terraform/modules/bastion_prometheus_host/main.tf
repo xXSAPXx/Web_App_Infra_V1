@@ -23,7 +23,7 @@ resource "aws_instance" "bastion_prometheus" {
   subnet_id              = var.subnet_id
   vpc_security_group_ids = var.bastion_sec_group_ids
   key_name               = var.key_name
-  user_data              = locals.bastion_prometheus_host_userdata
+  user_data              = base64encode(local.bastion_prometheus_host_userdata)
   iam_instance_profile   = var.iam_instance_profile
 
 

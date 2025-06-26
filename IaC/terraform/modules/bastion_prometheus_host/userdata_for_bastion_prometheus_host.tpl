@@ -5,6 +5,7 @@
 sudo dnf install -y mysql
 
 
+
 #####################################################################################
 ###################### AUTOMATIC (Hostname) DNS REGISTRATION ########################
 
@@ -15,7 +16,7 @@ TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-meta
 LOCAL_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
 
 # Construct a hostname using the private IP:
-HOSTNAME="bastion-prometheus-host-${LOCAL_IP//./-}.internal.xxsapxx.local"
+HOSTNAME="bastion-prometheus-$LOCAL_IP//./-.internal.xxsapxx.local"
 
 # Set the system hostname to the constructed value:
 sudo hostnamectl set-hostname $HOSTNAME
