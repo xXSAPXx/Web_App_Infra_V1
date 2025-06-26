@@ -1,4 +1,18 @@
 
+###################################################################################
+# Generate a new base64 encoded userdata script for the Bastion_Prometheus_Host.
+# With Added Dynamic Variables for prometheus_grafana_user / prometheus_grafana_api_key
+# This script must be passed to the Bastion_Prometheus_EC2 instance.
+###################################################################################
+
+locals {
+  bastion_prometheus_host_userdata = templatefile("${path.module}/userdata_for_bastion_prometheus_host.tpl", {
+    prometheus_grafana_user    = var.prometheus_grafana_user
+    prometheus_grafana_api_key = var.prometheus_grafana_api_key
+  })
+}
+
+
 ########################################################################
 # Public EC2 - Jump_Host + Prometheus server:
 ########################################################################
@@ -9,7 +23,7 @@ resource "aws_instance" "bastion_prometheus" {
   subnet_id              = var.subnet_id
   vpc_security_group_ids = var.bastion_sec_group_ids
   key_name               = var.key_name
-  user_data              = var.user_data_path
+  user_data              = locals.bastion_prometheus_host_userdata
   iam_instance_profile   = var.iam_instance_profile
 
 

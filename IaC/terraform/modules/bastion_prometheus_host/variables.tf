@@ -1,5 +1,22 @@
 
 ##########################################
+# Grafana Connect Variables: 
+##########################################
+
+variable "prometheus_grafana_user" {
+  type        = string
+  sensitive   = true
+  description = "Prometheus Grafana User"
+}
+
+variable "prometheus_grafana_api_key" {
+  type        = string
+  sensitive   = true
+  description = "Prometheus Grafana API Key"
+}
+
+
+##########################################
 # BASTION HOST VARIABLES 
 ##########################################
 
@@ -26,11 +43,6 @@ variable "bastion_sec_group_ids" {
 
 variable "key_name" {
   description = "Key pair name for SSH access"
-  type        = string
-}
-
-variable "user_data_path" {
-  description = "Path to the user data template file"
   type        = string
 }
 

@@ -116,8 +116,8 @@ global:
 remote_write:
   - url: https://prometheus-prod-24-prod-eu-west-2.grafana.net/api/prom/push
     basic_auth:
-      username: 1968384
-      password: glc_eyJvIjoiMTMwNTgzNiIsIm4iOiJzdGFjay0xMTI1NjY3LWFsbG95LWF3c19wcm9tZXRoZXVzIiwiayI6IjFSNmVrMERzVEEyTDB3OTNodjlLbDQ2cyIsIm0iOnsiciI6InByb2QtZXUtd2VzdC0yIn19
+      username: ${prometheus_grafana_user}
+      password: ${prometheus_grafana_api_key}
 
 # Alertmanager configuration
 alerting:

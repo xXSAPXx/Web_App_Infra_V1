@@ -18,8 +18,24 @@ variable "cloudflare_domain_name" {
   description = "Cloudflare Domain Name for Configuration"
 }
 
+
+# AWS Variables:
 variable "aws_key_pair" {
   type        = string
   sensitive   = true
   description = "SSH KeyPair for the EC2 instances"
+}
+
+
+# Grafana Connect Variables: 
+variable "prometheus_grafana_user" {
+  type        = string
+  sensitive   = true
+  description = "Prometheus Grafana User"
+}
+
+variable "prometheus_grafana_api_key" {
+  type        = string
+  sensitive   = true
+  description = "Prometheus Grafana API Key"
 }

@@ -187,6 +187,9 @@ module "database" {
 module "bastion_prometheus" {
   source = "./modules/bastion_prometheus_host"
 
+# --- Pass grafana_user and grafana_api_key to Bastion_Host User_Data_Script: ---
+  prometheus_grafana_user            = var.prometheus_grafana_user
+  prometheus_grafana_api_key         = var.prometheus_grafana_api_key
 
   # --- Bastion_Prometheus_Host Settings ---
   ami_id                = "ami-0583d8c7a9c35822c"
@@ -194,9 +197,9 @@ module "bastion_prometheus" {
   subnet_id             = module.vpc.public_subnet_2_id
   bastion_sec_group_ids = [module.security_groups.bastion_host_security_group_id]
   key_name              = var.aws_key_pair
-  user_data_path        = filebase64("${path.module}/modules/bastion_prometheus_host/userdata_for_bastion_prometheus_host.tpl")
   iam_instance_profile  = module.iam.prometheus_server_instance_profile_name
-
+  
+  # EBS Volume Settings:
   volume_size = 10
   volume_type = "gp2"
 
