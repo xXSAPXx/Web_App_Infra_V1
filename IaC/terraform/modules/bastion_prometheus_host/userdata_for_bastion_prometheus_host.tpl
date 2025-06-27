@@ -60,7 +60,7 @@ PROMETHEUS_VERSION="2.53.4"
 sudo dnf install -y bash-completion
 sudo dnf install -y vim
 sudo dnf install -y wget
-sudo dnf upgrade -y
+# sudo dnf upgrade -y
 
 
 # Configure directories / users and groups: 
@@ -109,7 +109,8 @@ EOL
 
 
 # Configure Prometheus settings: [AUTO DISCOVERY SERVICE + SEND METRICS TO GRAFANA CLOUD]
-# IAM ROLE NEEDED FOR THE AUTO DISCOVERY SERVICE: 
+# IAM ROLE NEEDED FOR THE AUTO DISCOVERY SERVICE
+# Escape template terraform variables and cloudinit variables with \$
 sudo cat <<EOL | sudo tee $PROMETHEUS_CONF_DIR/prometheus.yml
 # My global config:
 global:
@@ -145,14 +146,6 @@ scrape_configs:
         instance: "bastion-prometheus-host-9090"
 
 
-######### Scrape node_exporter system metrics from the same host: #########
-#  - job_name: "bastion-node-exporter"
-#    static_configs:
-#    - targets: ["localhost:9100"]
-#      labels:
-#        instance: "bastion-prometheus-host-9100"
-
-
 ######## EC2 Dynamic Discovery Job: ########
   - job_name: "ec2-node-exporters"
     ec2_sd_configs:
@@ -160,11 +153,11 @@ scrape_configs:
     relabel_configs:
     - source_labels: [__meta_ec2_private_ip]
       target_label: __address__
-      replacement: "$1:9100"
+      replacement: "\$1:9100"   
     - source_labels: [__meta_ec2_tag_Name, __meta_ec2_private_ip]
       regex: (.+);(.+)
       target_label: instance
-      replacement: "$1-$2"
+      replacement: "\$1-\$2" 
 EOL
 
 
