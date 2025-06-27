@@ -139,7 +139,7 @@ scrape_configs:
 
 
 ######### Prometheus Self-Scraping Job: #########
-  - job_name: "bastion-prometheus-self-scraping"
+  - job_name: "prometheus-self-scraping"
     static_configs:
     - targets: ["localhost:9090"]
       labels:
