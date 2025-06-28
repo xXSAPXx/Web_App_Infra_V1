@@ -47,6 +47,10 @@ variable "bastion_host_cidr_block" {
   default     = "0.0.0.0/0"
 }
 
+variable "vpc_cidr_block" {
+  type        = string
+  description = "CIDR block for the VPC."
+}
 
 ##############################################
 # ALB SEC_GROUP VARIABLES:

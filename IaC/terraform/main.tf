@@ -118,6 +118,7 @@ module "security_groups" {
   bastion_host_cidr_block = "0.0.0.0/0"
   sec_group_name          = "bastion_prometheus_sg"
   sec_group_description   = "Allow SSH and Prometheus and Node_Exporter Ports"
+  vpc_cidr_block          =  module.vpc.vpc_cidr_block # Used for ICMP (Ping) from inside the VPC.
 
   # --- ALB Sec_Group Settings ---
   alb_sec_group_cidr_block = "0.0.0.0/0" # Public ALB Allows HTTP / HTTPS 

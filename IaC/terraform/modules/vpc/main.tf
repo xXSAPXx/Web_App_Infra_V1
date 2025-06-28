@@ -157,6 +157,10 @@ resource "aws_route_table" "private_rt" {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat.id
   }
+
+  tags = {
+    Name = "private_rt_IaC"
+  }
 }
 
 ##### PRIVATE SUBNETS: ##### 
