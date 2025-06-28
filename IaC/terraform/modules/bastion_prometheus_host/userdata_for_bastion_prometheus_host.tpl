@@ -15,11 +15,14 @@ TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-meta
 # Fetch the private IPv4 address of the EC2 instance.
 LOCAL_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
 
-# Construct a hostname using the private IP:
-HOSTNAME="bastion-prometheus-$LOCAL_IP//./-.internal.xxsapxx.local"
+# Replace dots with dashes in the IP address
+DASHED_IP=$(echo "$LOCAL_IP" | tr '.' '-')
 
-# Set the system hostname to the constructed value:
-sudo hostnamectl set-hostname $HOSTNAME
+# Construct the hostname
+HOSTNAME="bastion-prometheus-$DASHED_IP.internal.xxsapxx.local"
+
+# Set the system hostname
+sudo hostnamectl set-hostname "$HOSTNAME"
 
 
 
@@ -143,7 +146,7 @@ scrape_configs:
     static_configs:
     - targets: ["localhost:9090"]
       labels:
-        instance: "bastion-prometheus-host-9090"
+        instance: "bastion-prometheus-host"
 
 
 ######## EC2 Dynamic Discovery Job: ########
