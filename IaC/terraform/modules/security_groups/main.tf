@@ -60,7 +60,7 @@ resource "aws_security_group" "bastion_prometheus_sg" {
     from_port   = -1
     to_port     = -1
     protocol    = "icmp"
-    cidr_blocks = [var.bastion_host_cidr_block] # Ping from everywhere. 
+    cidr_blocks = [var.vpc_cidr_block] # Ping from VPC CIDR. 
   }
 
   egress {

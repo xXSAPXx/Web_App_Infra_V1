@@ -11,6 +11,10 @@ output "vpc_name" {
   value       = aws_vpc.my_vpc.tags.Name
 }
 
+output "vpc_cidr_block" {
+  description = "The CIDR block of the VPC."
+  value       = aws_vpc.my_vpc.cidr_block
+}
 
 output "public_subnet_1_id" {
   description = "A list of the public subnet IDs."

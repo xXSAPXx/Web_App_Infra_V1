@@ -116,6 +116,7 @@ module "security_groups" {
 
   # --- Bastion_Prometheus_Host Sec_Group Settings ---
   bastion_host_cidr_block = "0.0.0.0/0"
+  vpc_cidr_block          = module.vpc.vpc_cidr_block # Ping Bastion from VPC CIDR.
   sec_group_name          = "bastion_prometheus_sg"
   sec_group_description   = "Allow SSH and Prometheus and Node_Exporter Ports"
 

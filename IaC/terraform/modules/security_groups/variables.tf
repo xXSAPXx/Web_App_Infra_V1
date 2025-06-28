@@ -41,11 +41,15 @@ variable "sec_group_description" {
   default     = "Allow SSH and Prometheus and Node_Exporter Ports"
 }
 
-
 variable "bastion_host_cidr_block" {
   type        = string
   description = "CIDR block used for ingress and egress inside the VPC."
   default     = "0.0.0.0/0"
+}
+
+variable "vpc_cidr_block" {
+  type        = string
+  description = "CIDR block used for ingress and egress inside the VPC."
 }
 
 
