@@ -56,6 +56,13 @@ resource "aws_security_group" "bastion_prometheus_sg" {
     cidr_blocks = [var.bastion_host_cidr_block]
   }
 
+  ingress {
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = [var.bastion_host_cidr_block] # Ping from everywhere. 
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -138,6 +145,13 @@ resource "aws_security_group" "web_servers_sg" {
     to_port     = 9100
     protocol    = "tcp"
     cidr_blocks = [var.asg_sec_group_cidr_block] # Node Exporter / # Only inside VPC
+  }
+ 
+   ingress {
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = [var.asg_sec_group_cidr_block] # Ping Only Inside VPC
   }
 
   egress {
