@@ -173,18 +173,18 @@ sudo dnf install -y awscli
 ##### NEEDS IAM ROLE --- (BECAUSE AWS CLI ASKS FOR CREDENTIALS): 
 
 # Automatic DNS Registration for every EC2 inside the ASG: 
-#sudo aws route53 change-resource-record-sets --hosted-zone-id "$PRIVATE_DNS_ZONE_ID" --change-batch "{
-#  \"Comment\": \"Register DNS Record for EC2 instance in Route53 private_zone \",
-#  \"Changes\": [{
-#    \"Action\": \"UPSERT\",
-#    \"ResourceRecordSet\": {
-#      \"Name\": \"$HOSTNAME\",
-#      \"Type\": \"A\",
-#      \"TTL\": 120,
-#      \"ResourceRecords\": [{ \"Value\": \"$LOCAL_IP\" }]
-#    }
-#  }]
-#}"
+sudo aws route53 change-resource-record-sets --hosted-zone-id "$PRIVATE_DNS_ZONE_ID" --change-batch "{
+  \"Comment\": \"Register DNS Record for EC2 instance in Route53 private_zone \",
+  \"Changes\": [{
+    \"Action\": \"UPSERT\",
+    \"ResourceRecordSet\": {
+      \"Name\": \"$HOSTNAME\",
+      \"Type\": \"A\",
+      \"TTL\": 120,
+      \"ResourceRecords\": [{ \"Value\": \"$LOCAL_IP\" }]
+    }
+  }]
+}"
 
 
 #####################################################################################
