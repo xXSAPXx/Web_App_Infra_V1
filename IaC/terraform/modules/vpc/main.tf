@@ -189,5 +189,6 @@ resource "aws_route53_zone" "private" {
     vpc_id = aws_vpc.my_vpc.id
   }
   comment = "Private zone for internal DNS resolution"
+  force_destroy = true # Allows deletion of the zone even if it contains records
 }
 
