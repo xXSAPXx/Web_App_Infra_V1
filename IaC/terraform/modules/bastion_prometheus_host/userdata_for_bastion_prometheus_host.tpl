@@ -33,7 +33,7 @@ sudo dnf install -y awscli
 
 ##### NEEDS IAM ROLE --- (BECAUSE AWS CLI ASKS FOR CREDENTIALS): 
 
-# Automatic DNS Registration for every EC2 inside the ASG: 
+# Automatic DNS Registration for the Bastion Host: 
 sudo aws route53 change-resource-record-sets --hosted-zone-id "$PRIVATE_DNS_ZONE_ID" --change-batch "{
   \"Comment\": \"Register DNS Record for EC2 instance in Route53 private_zone \",
   \"Changes\": [{
