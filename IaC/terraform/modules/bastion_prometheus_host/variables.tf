@@ -1,5 +1,15 @@
 
 ##########################################
+# PRIVATE DNS ZONE VARIABLE:
+##########################################
+variable "private_dns_zone_id" {
+  type        = string
+  sensitive   = true
+  description = "Private DNS Zone ID for the Bastion Host to register its DNS record"
+}
+
+
+##########################################
 # Grafana Connect Variables: 
 ##########################################
 

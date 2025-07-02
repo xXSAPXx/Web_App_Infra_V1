@@ -7,6 +7,7 @@
 
 locals {
   bastion_prometheus_host_userdata = templatefile("${path.module}/userdata_for_bastion_prometheus_host.tpl", {
+    private_dns_zone_id        = var.private_dns_zone_id
     prometheus_grafana_user    = var.prometheus_grafana_user
     prometheus_grafana_api_key = var.prometheus_grafana_api_key
   })

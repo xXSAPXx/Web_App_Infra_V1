@@ -188,6 +188,9 @@ module "database" {
 module "bastion_prometheus" {
   source = "./modules/bastion_prometheus_host"
 
+  # --- Pass PRIVATE_DNS_ZONE to Bastion_Prometheus_Host User_Data_Script: ---
+  private_dns_zone_id = module.vpc.private_dns_zone_id
+
   # --- Pass grafana_user and grafana_api_key to Bastion_Host User_Data_Script: ---
   prometheus_grafana_user    = var.prometheus_grafana_user
   prometheus_grafana_api_key = var.prometheus_grafana_api_key
