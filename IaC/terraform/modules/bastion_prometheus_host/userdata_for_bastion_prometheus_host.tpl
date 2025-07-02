@@ -1,7 +1,10 @@
 #!/bin/bash
 
+
 # Variables from Terraform: 
 PRIVATE_DNS_ZONE_ID="${private_dns_zone_id}"
+echo "PRIVATE_DNS_ZONE_ID is: $PRIVATE_DNS_ZONE_ID" > /tmp/debug_env.txt
+
 
 # Install MySQL Client: (Connect to the DB)
 sudo dnf install -y mysql
