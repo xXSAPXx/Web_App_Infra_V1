@@ -6,7 +6,7 @@
 
 # Infrastructure Deployment Requirements: 
 
-This project provisions cloud infrastructure using **Terraform**, integrating **AWS**, **Cloudflare**, and **Grafana Cloud** to deploy a production-ready environment.
+This project provisions cloud infrastructure using **Terraform**, integrating **AWS**, **Cloudflare**, and **Grafana Cloud**
 
 ---
 
