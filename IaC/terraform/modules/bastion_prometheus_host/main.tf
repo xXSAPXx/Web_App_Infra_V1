@@ -1,7 +1,7 @@
 
 ###################################################################################
 # Generate a new base64 encoded userdata script for the Bastion_Prometheus_Host.
-# With Added Dynamic Variables for prometheus_grafana_user / prometheus_grafana_api_key
+# With Added Dynamic Variables for prometheus_grafana_user / prometheus_grafana_api_key / private_dns_zone_id
 # This script must be passed to the Bastion_Prometheus_EC2 instance.
 ###################################################################################
 
