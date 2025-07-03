@@ -28,7 +28,7 @@ Before deploying this infrastructure, ensure the following prerequisites are met
 
 - **AWS Account**
   - Must have:
-    - S3 (for Terraform backend) -- [Check backend.tf]
+    - S3 (for Terraform backend) -- [Check `backend.tf`]
     - **Key Pair** must exist or be created for SSH access.
 
 - **Cloudflare Account**
