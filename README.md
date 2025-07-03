@@ -4,13 +4,13 @@
 
 
 
-# Infrastructure Deployment with Terraform, AWS, Cloudflare, and Grafana Cloud
+# Infrastructure Deployment Requirements: 
 
 This project provisions cloud infrastructure using **Terraform**, integrating **AWS**, **Cloudflare**, and **Grafana Cloud** to deploy a production-ready environment.
 
 ---
 
-## ✅ Requirements
+## 📋 Requirements
 
 Before deploying this infrastructure, ensure the following prerequisites are met:
 
@@ -26,21 +26,18 @@ Before deploying this infrastructure, ensure the following prerequisites are met
 
 ### 🌐 Accounts & Services
 
-- **AWS Account**
-  - Must have:
+- **AWS Account Must have:**
     - S3 (for Terraform backend) -- [Check `backend.tf`]
     - **Key Pair** must exist or be created for SSH access.
 
-- **Cloudflare Account**
-  - With:
+- **Cloudflare Account With:**
     - API Token with DNS edit permissions
     - Zone ID of your domain
 
 - **Own Domain Name**
-  - Managed in Cloudflare — used for DNS records and HTTPS via AWS ALB.
+    - Managed in Cloudflare — used for DNS records and HTTPS via AWS ALB.
 
-- **Grafana Cloud Account**
-  - With **Prometheus Remote Write** credentials:
+- **Grafana Cloud Account With **Prometheus Remote Write** credentials and datasource:**
     - `prometheus_grafana_user`
     - `prometheus_grafana_api_key`
 
@@ -48,17 +45,11 @@ Before deploying this infrastructure, ensure the following prerequisites are met
 
 ### 🔐 Required Terraform Variables
 
-These must be defined (e.g., in `terraform.tfvars`):
+- **Check `terraform.tfvars.example` file and rename it to e.g. `terraform.tfvars.tf`**
+    - Fill in the required variables: 
 
 ```hcl
 # Cloudflare
-cloudflare_api_token       = "<YOUR_TOKEN>"
-cloudflare_zone_id         = "<YOUR_ZONE_ID>"
-cloudflare_domain_name     = "<YOUR_DOMAIN_NAME>"
-
 # AWS EC2 Key Pair
-aws_key_pair               = "<YOUR_KEY_PAIR_NAME>"
-
 # Grafana Cloud (Prometheus Remote Write)
-prometheus_grafana_user    = "<YOUR_GRAFANA_USERNAME>"
-prometheus_grafana_api_key = "<YOUR_GRAFANA_API_KEY>"
+
