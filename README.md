@@ -20,7 +20,7 @@ Before deploying this infrastructure, ensure the following prerequisites are met
   _Used for infrastructure as code (IaC) provisioning._
 
 - **AWS CLI**  
-  _Used for checking resources, managing credentials, and manual verification (e.g., EC2 status, logs).
+  _Used for checking resources, managing credentials, and manual verification (e.g., EC2 status, logs)._
 
 ---
 
