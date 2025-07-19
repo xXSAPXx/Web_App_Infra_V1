@@ -128,6 +128,20 @@ remote_write:
       username: ${prometheus_grafana_user}
       password: ${prometheus_grafana_api_key}
 
+# Drop some metrics that are not needed:
+# This is a workaround for the issue that too many metrics are pushed to Grafana Cloud free tier.
+    write_relabel_configs:
+      - source_labels: [__name__]
+        regex: "node_scrape_collector_.*"
+        action: drop
+      - source_labels: [__name__]
+        regex: "prometheus_tsdb_.*"
+        action: drop
+      - source_labels: [__name__]
+        regex: "prometheus_http_requests_total"
+        action: drop
+
+
 # Alertmanager configuration
 alerting:
   alertmanagers:
