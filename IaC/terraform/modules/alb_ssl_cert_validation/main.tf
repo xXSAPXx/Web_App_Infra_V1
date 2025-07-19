@@ -59,8 +59,8 @@ resource "cloudflare_dns_record" "cert_validation" {
       tags,
       tags_modified_on,
     ]
-  }                                        
-}                     
+  }
+}
 
 
 
@@ -72,10 +72,10 @@ resource "aws_acm_certificate_validation" "cert_validation" {
     for record in cloudflare_dns_record.cert_validation : record.name
   ]
 
- lifecycle { # Prevent RE-Deployment of CloudFlare resource every time we terraform plan
+  lifecycle { # Prevent RE-Deployment of CloudFlare resource every time we terraform plan
     ignore_changes = [
       id,
       validation_record_fqdns,
     ]
-  }                                        
+  }
 }     

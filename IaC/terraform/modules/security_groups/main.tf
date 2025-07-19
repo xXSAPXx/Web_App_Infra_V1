@@ -146,8 +146,8 @@ resource "aws_security_group" "web_servers_sg" {
     protocol    = "tcp"
     cidr_blocks = [var.asg_sec_group_cidr_block] # Node Exporter / # Only inside VPC
   }
- 
-   ingress {
+
+  ingress {
     from_port   = -1
     to_port     = -1
     protocol    = "icmp"

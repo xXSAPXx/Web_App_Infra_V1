@@ -22,7 +22,7 @@ resource "cloudflare_dns_record" "subdomain_to_alb_record" {
   ttl     = var.dns_ttl            # DNS Record TTL 
   proxied = var.proxied            # Enables Cloudflare HTTPS + caching
 
-  lifecycle {                      # Prevent RE-Deployment of CloudFlare resource every time we terraform plan
+  lifecycle { # Prevent RE-Deployment of CloudFlare resource every time we terraform plan
     ignore_changes = [
       name,
       content,
@@ -36,7 +36,7 @@ resource "cloudflare_dns_record" "subdomain_to_alb_record" {
       tags,
       tags_modified_on,
     ]
-  }                                        
+  }
 }
 
 
@@ -49,8 +49,8 @@ resource "cloudflare_dns_record" "root_domain_to_alb_record" {
   content = var.alb_dns_name         # Attach DNS Record to AWS ALB CNAME
   ttl     = var.root_dns_ttl         # DNS Record TTL 
   proxied = var.root_proxied         # Enables Cloudflare HTTPS + caching
-  
-  lifecycle {                        # Prevent RE-Deployment of CloudFlare resource every time we terraform plan
+
+  lifecycle { # Prevent RE-Deployment of CloudFlare resource every time we terraform plan
     ignore_changes = [
       name,
       content,
@@ -64,8 +64,8 @@ resource "cloudflare_dns_record" "root_domain_to_alb_record" {
       tags,
       tags_modified_on,
     ]
-  }                                        
-}                                        
+  }
+}
 
 
 
